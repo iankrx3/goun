@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Brand colors — PRD §15.4 */
+  --goun-rose: #b98278;
+  --han-cream: #e8d8d1;
+  --warm-taupe: #76645d;
+  --goun-white: #ffffff;
+
+  /* Semantic */
+  --color-bg-primary: var(--goun-white);
+  --color-bg-secondary: var(--han-cream);
+  --color-text-primary: var(--warm-taupe);
+  --color-text-inverse: var(--goun-white);
+  --color-accent: var(--goun-rose);
+  --color-border: var(--han-cream);
+
+  /* Typography */
+  --font-eng-main: 'Bodoni Moda', 'Bodoni', serif;
+  --font-eng-sub: 'Satoshi', 'Pretendard', sans-serif;
+  --font-kr: 'Pretendard', sans-serif; /* placeholder — unconfirmed, PRD §15.2 */
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-eng-sub);
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-display {
+  font-family: var(--font-eng-main);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

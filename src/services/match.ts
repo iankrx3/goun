@@ -1,0 +1,108 @@
+import { MatchResult, Place, QuizAnswers, Treatment } from '../types';
+import { fetchPlaceById, fetchTreatments } from './places';
+
+// AI Matching & Place Ranking — Goun_PRD_v2_KTO_Design.md §9.
+// Match Score = Concern + Result + Downtime + Budget + Timing + Location Fit
+// + Foreigner Friendliness. This is a transparent, client-side stand-in for
+// the real LLM/structured recommendation engine described in §13 (Tech
+// Stack — AI); it produces the same shape of output (MatchResult) so the UI
+// doesn't change when a real backend replaces it.
+
+const BUDGET_RANGE: Record<NonNullable<QuizAnswers['budget']>, [number, number]> = {
+  'under-100': [0, 100],
+  '100-300': [100, 300],
+  '300-500': [300, 500],
+  '500-plus': [500, Infinity],
+};
+
+function downtimeFit(want: QuizAnswers['downtime'], have: Treatment['downtime']): number {
+  if (!want || want === 'no-mind') return 1;
+  if (want === have) return 1;
+  const order = ['none', '1-3-days', '3-7-days'];
+  const wantIdx = order.indexOf(want);
+  const haveIdx = order.indexOf(have);
+  if (wantIdx === -1 || haveIdx === -1) return 0.5;
+  return Math.max(0, 1 - Math.abs(wantIdx - haveIdx) * 0.4);
+}
+
+function timingFit(want: QuizAnswers['resultTiming'], have: Treatment['resultTiming']): number {
+  if (!want) return 1;
+  if (want === have) return 1;
+  const order = ['asap', 'within-week', '1-2-weeks', 'long-term'];
+  const wantIdx = order.indexOf(want);
+  const haveIdx = order.indexOf(have);
+  return Math.max(0, 1 - Math.abs(wantIdx - haveIdx) * 0.25);
+}
+
+function budgetFit(want: QuizAnswers['budget'], price: Treatment['price']): number {
+  if (!want) return 1;
+  const [min, max] = BUDGET_RANGE[want];
+  const overlap = Math.min(price.max, max) - Math.max(price.min, min);
+  if (overlap >= 0) return 1;
+  const gap = Math.abs(overlap);
+  return Math.max(0, 1 - gap / 200);
+}
+
+function concernFit(concerns: string[], treatment: Treatment): number {
+  if (concerns.length === 0) return 0.7;
+  const hit = treatment.concern.filter((c) => concerns.includes(c)).length;
+  return Math.min(1, hit / Math.min(concerns.length, treatment.concern.length || 1));
+}
+
+export async function getMatches(answers: QuizAnswers): Promise<MatchResult[]> {
+  const treatments = await fetchTreatments();
+  const candidates = answers.category
+    ? treatments.filter((t) => t.category === answers.category)
+    : treatments;
+
+  const wantsEnglish = answers.other.includes('English Friendly');
+  const wantsForeignerFirst = answers.other.includes('First Time');
+
+  const scored = await Promise.all(
+    candidates.map(async (treatment) => {
+      const place = await fetchPlaceById(treatment.placeId);
+      if (!place) return null;
+
+      const cFit = concernFit(answers.concerns, treatment);
+      const rFit = 0.85; // Result Fit — approximated until treatment outcome taxonomy exists
+      const dFit = downtimeFit(answers.downtime, treatment.downtime);
+      const bFit = budgetFit(answers.budget, treatment.price);
+      const tFit = timingFit(answers.resultTiming, treatment.resultTiming);
+      const locationFit = place.foreignerFriendly ? 0.9 : 0.6;
+      const foreignerFit =
+        treatment.foreignerFriendliness * (wantsEnglish || wantsForeignerFirst ? 1.1 : 1);
+
+      const weights = { cFit: 0.25, rFit: 0.15, dFit: 0.15, bFit: 0.15, tFit: 0.15, locationFit: 0.1, foreignerFit: 0.05 };
+      const raw =
+        cFit * weights.cFit +
+        rFit * weights.rFit +
+        dFit * weights.dFit +
+        bFit * weights.bFit +
+        tFit * weights.tFit +
+        locationFit * weights.locationFit +
+        Math.min(1, foreignerFit) * weights.foreignerFit;
+
+      const matchScore = Math.round(Math.min(0.99, raw) * 100);
+
+      const reasons: string[] = [];
+      if (cFit > 0.6) reasons.push('Best for your goal');
+      if (dFit > 0.7) reasons.push('Suitable downtime');
+      if (bFit > 0.7) reasons.push('Fits your budget');
+      if (tFit > 0.7) reasons.push('Expected result timing');
+      if (wantsEnglish && treatment.foreignerFriendliness > 0.8) reasons.push('Foreigner-friendly');
+      reasons.push(`${place.area} location`);
+
+      return { treatment, place, matchScore, reasons } satisfies MatchResult;
+    })
+  );
+
+  return scored
+    .filter((m): m is MatchResult => m !== null)
+    .sort((a, b) => b.matchScore - a.matchScore)
+    .slice(0, 3);
+}
+
+export function placesForCategory(places: Place[], category: QuizAnswers['category']) {
+  if (!category) return places;
+  return places.filter((p) => p.category === category);
+}

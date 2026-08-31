@@ -1,0 +1,456 @@
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import L from 'leaflet';
+import { Locate, Loader2, Search, X, ChevronRight, Plus, Minus } from 'lucide-react';
+import type { BeautyCategory, CreatorPick, Place } from '../types';
+import { categoryMeta } from '../data/mock';
+import { fetchCreatorPicks, fetchPlaces } from '../services/places';
+
+// Adapted from extract/src/components/MapView.tsx (Sniffood map + login kit).
+// Same Leaflet/MapTiler setup and custom controls; filter modes and pin data
+// swapped from restaurant curators to Goun's beauty Place/Category model
+// (§3 MAP) plus a KTO Wellness pin layer (§7.2 use case ②, deferred to V1
+// in the PRD but wired here since the data shape already supports it).
+
+interface MapViewProps {
+  onSelectPlace: (place: Place) => void;
+}
+
+type FilterMode = 'category' | 'picks';
+type PickFilter = 'all' | 'ai' | 'creator' | 'community';
+
+const CATEGORY_FILTERS: { id: 'all' | BeautyCategory; label: string }[] = [
+  { id: 'all', label: 'All' },
+  { id: 'skin', label: '✨ Skin' },
+  { id: 'face', label: '💎 Face' },
+  { id: 'hair', label: '💇 Hair' },
+  { id: 'nails', label: '💅 Nails' },
+  { id: 'makeup', label: '💄 Makeup' },
+];
+
+const PICK_FILTERS: { id: PickFilter; label: string }[] = [
+  { id: 'all', label: 'All' },
+  { id: 'ai', label: 'AI Picks' },
+  { id: 'creator', label: 'Creator Picks' },
+  { id: 'community', label: 'Community Picks' },
+];
+
+export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<L.Map | null>(null);
+  const markersLayerRef = useRef<L.LayerGroup | null>(null);
+  const wellnessLayerRef = useRef<L.LayerGroup | null>(null);
+  const userLocationLayerRef = useRef<L.LayerGroup | null>(null);
+  const markerMapRef = useRef<Map<string, L.Marker>>(new Map());
+
+  const [places, setPlaces] = useState<Place[]>([]);
+  const [creatorPicks, setCreatorPicks] = useState<CreatorPick[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const [filterMode, setFilterMode] = useState<FilterMode>('category');
+  const [selectedCategory, setSelectedCategory] = useState<'all' | BeautyCategory>('all');
+  const [selectedPick, setSelectedPick] = useState<PickFilter>('all');
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<Place[]>([]);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [isLocating, setIsLocating] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLoading(true);
+    Promise.all([fetchPlaces(), fetchCreatorPicks().catch(() => [] as CreatorPick[])])
+      .then(([placeList, picks]) => {
+        setPlaces(placeList);
+        setCreatorPicks(picks);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    if (!mapContainerRef.current || mapInstanceRef.current) return;
+
+    const map = L.map(mapContainerRef.current, {
+      center: [37.5665, 126.978],
+      zoom: 13,
+      zoomControl: false,
+    });
+
+    // MapTiler serves an "Invalid key" placeholder tile with a 200 status (not a
+    // fetch error), so `tileerror` never fires to trigger a fallback. Only use
+    // MapTiler when a real key is configured; otherwise go straight to the free
+    // Carto Voyager basemap.
+    const maptilerKey = import.meta.env.VITE_MAPTILER_API_KEY;
+    const osmVoyagerTileUrl = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+
+    const tileLayer = maptilerKey
+      ? L.tileLayer(`https://api.maptiler.com/maps/dataviz-v4/256/{z}/{x}/{y}.png?key=${maptilerKey}`, {
+          attribution:
+            '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>',
+          maxZoom: 19,
+          crossOrigin: true,
+        })
+      : L.tileLayer(osmVoyagerTileUrl, {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap contributors</a> &copy; <a href="https://carto.com/attributions" target="_blank">CARTO</a>',
+          maxZoom: 19,
+        });
+    tileLayer.on('tileerror', () => tileLayer.setUrl(osmVoyagerTileUrl));
+    tileLayer.addTo(map);
+
+    markersLayerRef.current = L.layerGroup().addTo(map);
+    wellnessLayerRef.current = L.layerGroup().addTo(map);
+    userLocationLayerRef.current = L.layerGroup().addTo(map);
+    mapInstanceRef.current = map;
+  }, []);
+
+  const getFilteredPlaces = useCallback((): Place[] => {
+    let result = places;
+    if (filterMode === 'category' && selectedCategory !== 'all') {
+      result = result.filter((p) => p.category === selectedCategory);
+    }
+    if (filterMode === 'picks' && selectedPick !== 'all') {
+      result = result.filter((p) =>
+        selectedPick === 'ai' ? p.aiPick : selectedPick === 'creator' ? p.creatorPick : p.communityPick
+      );
+    }
+    return result;
+  }, [places, filterMode, selectedCategory, selectedPick]);
+
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    const layer = markersLayerRef.current;
+    if (!map || !layer) return;
+
+    layer.clearLayers();
+    markerMapRef.current.clear();
+
+    getFilteredPlaces().forEach((place) => {
+      const icon = categoryMeta[place.category]?.icon ?? '✨';
+      const customIcon = L.divIcon({
+        html: `
+          <div style="
+            display:flex;align-items:center;justify-content:center;
+            width:36px;height:36px;background:#B98278;color:white;
+            border-radius:50%;box-shadow:0 4px 14px rgba(185,130,120,0.45);
+            border:2px solid white;cursor:pointer;
+          ">
+            <span style="font-size:14px;">${icon}</span>
+          </div>`,
+        className: 'custom-pin',
+        iconSize: [36, 36],
+        iconAnchor: [18, 18],
+      });
+
+      const marker = L.marker([place.latitude, place.longitude], { icon: customIcon });
+      marker.on('click', () => onSelectPlace(place));
+      marker.bindPopup(`
+        <div style="padding:6px;font-family:inherit;">
+          <img src="${place.photoUrl}" style="width:100%;height:90px;object-fit:cover;border-radius:8px;margin-bottom:6px;" />
+          <div style="font-size:13px;font-weight:bold;color:#76645D;">${place.name}</div>
+          <div style="font-size:11px;color:#B98278;font-weight:600;margin-top:2px;">★ ${place.rating} · ${place.area}</div>
+        </div>
+      `);
+
+      layer.addLayer(marker);
+      markerMapRef.current.set(place.id, marker);
+    });
+  }, [places, filterMode, selectedCategory, selectedPick, getFilteredPlaces, onSelectPlace]);
+
+  // KTO Wellness pins — tone-down Warm Taupe marker, visually distinct from Goun Rose beauty pins (§15.3)
+  useEffect(() => {
+    const layer = wellnessLayerRef.current;
+    if (!layer) return;
+    layer.clearLayers();
+
+    const seen = new Set<string>();
+    places.forEach((place) => {
+      place.nearbyWellness?.forEach((spot) => {
+        if (seen.has(spot.id)) return;
+        seen.add(spot.id);
+        const icon = L.divIcon({
+          html: `
+            <div style="
+              display:flex;align-items:center;justify-content:center;
+              width:28px;height:28px;background:#76645D;color:white;
+              border-radius:50%;box-shadow:0 3px 10px rgba(118,100,93,0.4);
+              border:2px solid white;
+            ">
+              <span style="font-size:11px;">🌿</span>
+            </div>`,
+          className: 'custom-wellness-pin',
+          iconSize: [28, 28],
+          iconAnchor: [14, 14],
+        });
+        const marker = L.marker([spot.latitude, spot.longitude], { icon });
+        marker.bindPopup(`
+          <div style="padding:6px;font-family:inherit;">
+            <div style="font-size:12px;font-weight:bold;color:#76645D;">🌿 ${spot.name}</div>
+            <div style="font-size:10px;color:#76645D;margin-top:2px;">KTO Wellness Pick · 자료: 한국관광공사</div>
+          </div>
+        `);
+        layer.addLayer(marker);
+      });
+    });
+  }, [places]);
+
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    const q = searchQuery.toLowerCase();
+    const timer = setTimeout(() => {
+      setSearchResults(
+        places
+          .filter((p) => p.name.toLowerCase().includes(q) || p.area.toLowerCase().includes(q))
+          .slice(0, 6)
+      );
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [searchQuery, places]);
+
+  const handleJumpToPlace = (place: Place) => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+    setSearchQuery('');
+    setIsSearchOpen(false);
+    map.flyTo([place.latitude, place.longitude], 16, { animate: true, duration: 1 });
+    setTimeout(() => markerMapRef.current.get(place.id)?.openPopup(), 1100);
+  };
+
+  const handleGetCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationError('Geolocation is not supported by your browser.');
+      return;
+    }
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    setIsLocating(true);
+    setLocationError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude, accuracy } = position.coords;
+        setUserLocation({ lat: latitude, lng: longitude });
+        setIsLocating(false);
+
+        if (userLocationLayerRef.current) {
+          userLocationLayerRef.current.clearLayers();
+          L.circle([latitude, longitude], {
+            radius: Math.max(accuracy, 25),
+            color: '#007AFF',
+            weight: 1.5,
+            fillColor: '#007AFF',
+            fillOpacity: 0.12,
+          }).addTo(userLocationLayerRef.current);
+
+          const userIcon = L.divIcon({
+            className: 'custom-user-location-icon',
+            html: `<div class="user-location-marker"><div class="user-location-pulse"></div><div class="user-location-dot"></div></div>`,
+            iconSize: [24, 24],
+            iconAnchor: [12, 12],
+          });
+          L.marker([latitude, longitude], { icon: userIcon })
+            .bindPopup('<div style="padding:4px 6px;font-size:12px;font-weight:600;">📍 Current Location</div>')
+            .addTo(userLocationLayerRef.current);
+        }
+
+        map.flyTo([latitude, longitude], Math.max(map.getZoom(), 15), { animate: true, duration: 1.2 });
+      },
+      (error) => {
+        setIsLocating(false);
+        setLocationError(
+          error.code === error.PERMISSION_DENIED
+            ? 'Location permission denied.'
+            : 'Unable to determine location.'
+        );
+        setTimeout(() => setLocationError(null), 4000);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
+
+  const handleSetFilterMode = (mode: FilterMode) => {
+    setFilterMode(mode);
+    setSelectedCategory('all');
+    setSelectedPick('all');
+  };
+
+  return (
+    <div className="relative h-[calc(100vh-64px)] w-full overflow-hidden bg-han-cream/30">
+      <div ref={mapContainerRef} className="h-full w-full z-0" />
+
+      {loading && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/60">
+          <Loader2 className="h-6 w-6 animate-spin text-goun-rose" />
+        </div>
+      )}
+
+      {locationError && (
+        <div className="absolute bottom-5 left-1/2 z-30 -translate-x-1/2 whitespace-nowrap rounded-full bg-warm-taupe/90 px-4 py-2 text-xs font-medium text-white shadow-xl backdrop-blur-md">
+          ⚠️ {locationError}
+        </div>
+      )}
+
+      <div className="absolute right-3 bottom-5 z-10 flex flex-col gap-2">
+        <MapButton onClick={() => mapInstanceRef.current?.zoomIn()} label="Zoom In">
+          <Plus className="h-4 w-4" />
+        </MapButton>
+        <MapButton onClick={() => mapInstanceRef.current?.zoomOut()} label="Zoom Out">
+          <Minus className="h-4 w-4" />
+        </MapButton>
+        <MapButton onClick={handleGetCurrentLocation} label="Go to current location" active={!!userLocation}>
+          {isLocating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Locate className="h-4 w-4" />}
+        </MapButton>
+      </div>
+
+      <div className="absolute top-3 left-3 right-3 z-10 mx-auto max-w-2xl space-y-2 pointer-events-none">
+        <div className="pointer-events-auto relative">
+          <div className="flex items-center gap-2 rounded-2xl bg-white/95 shadow-lg backdrop-blur-md border border-white/60 px-3.5 py-2.5">
+            <Search className="h-4 w-4 shrink-0 text-warm-taupe/60" />
+            <input
+              type="text"
+              placeholder="Search Korean beauty places..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setIsSearchOpen(true);
+              }}
+              onFocus={() => setIsSearchOpen(true)}
+              className="flex-1 bg-transparent text-xs text-warm-taupe placeholder-warm-taupe/40 focus:outline-none"
+            />
+            {searchQuery && (
+              <button onClick={() => { setSearchQuery(''); setIsSearchOpen(false); }} className="text-warm-taupe/50">
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+
+          {isSearchOpen && searchQuery && searchResults.length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-1.5 max-h-72 overflow-y-auto no-scrollbar rounded-2xl border border-han-cream bg-white shadow-2xl">
+              {searchResults.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => handleJumpToPlace(p)}
+                  className="flex w-full items-center gap-3 px-3.5 py-2.5 hover:bg-han-cream/30"
+                >
+                  <span className="text-lg leading-none">{categoryMeta[p.category].icon}</span>
+                  <div className="min-w-0 flex-1 text-left">
+                    <p className="truncate text-xs font-semibold text-warm-taupe">{p.name}</p>
+                    <p className="text-[10px] text-warm-taupe/60">{p.area} · ★{p.rating}</p>
+                  </div>
+                  <ChevronRight className="h-3.5 w-3.5 shrink-0 text-warm-taupe/40" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {!(isSearchOpen && searchQuery) && (
+          <div className="pointer-events-auto space-y-2">
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+              {([
+                { id: 'category' as FilterMode, label: 'Category' },
+                { id: 'picks' as FilterMode, label: 'Picks' },
+              ]).map((mode) => (
+                <button
+                  key={mode.id}
+                  onClick={() => handleSetFilterMode(mode.id)}
+                  className={`rounded-full px-3.5 py-1.5 text-[11px] font-bold shadow-sm backdrop-blur-md transition-all whitespace-nowrap ${
+                    filterMode === mode.id ? 'bg-warm-taupe text-white' : 'bg-white/90 text-warm-taupe/70 hover:bg-white'
+                  }`}
+                >
+                  {mode.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+              {filterMode === 'category'
+                ? CATEGORY_FILTERS.map((cat) => (
+                    <FilterChip
+                      key={cat.id}
+                      active={selectedCategory === cat.id}
+                      label={cat.label}
+                      onClick={() => setSelectedCategory(cat.id)}
+                    />
+                  ))
+                : PICK_FILTERS.map((pick) => (
+                    <FilterChip
+                      key={pick.id}
+                      active={selectedPick === pick.id}
+                      label={pick.label}
+                      onClick={() => setSelectedPick(pick.id)}
+                    />
+                  ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {creatorPicks.length > 0 && !(isSearchOpen && searchQuery) && (
+        <div className="pointer-events-none absolute top-[132px] left-3 right-3 z-10 mx-auto max-w-2xl">
+          <div className="pointer-events-auto rounded-2xl bg-white/90 p-3 shadow-lg backdrop-blur-md border border-white/60">
+            <p className="mb-2 px-1 text-[11px] font-bold uppercase tracking-wider text-warm-taupe/60">
+              Curated by Creators
+            </p>
+            <div className="flex items-center gap-3 overflow-x-auto no-scrollbar py-1">
+              {creatorPicks.map((pick) => (
+                <button
+                  key={pick.id}
+                  onClick={() => handleJumpToPlace(pick.place)}
+                  className="group flex shrink-0 flex-col items-center gap-1.5"
+                >
+                  <img
+                    src={pick.creator.avatar_url}
+                    alt={pick.creator.display_name}
+                    referrerPolicy="no-referrer"
+                    className="h-11 w-11 rounded-full object-cover ring-2 ring-goun-rose/30 group-hover:ring-goun-rose"
+                  />
+                  <span className="max-w-[70px] truncate text-[11px] font-medium text-warm-taupe">
+                    @{pick.creator.username}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const MapButton: React.FC<{ onClick: () => void; label: string; active?: boolean; children: React.ReactNode }> = ({
+  onClick,
+  label,
+  active,
+  children,
+}) => (
+  <button
+    onClick={onClick}
+    aria-label={label}
+    title={label}
+    className={`flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-lg border border-black/5 transition-all hover:scale-105 active:scale-95 ${
+      active ? 'text-[#007AFF] ring-2 ring-[#007AFF]/40' : 'text-warm-taupe hover:text-goun-rose'
+    }`}
+  >
+    {children}
+  </button>
+);
+
+const FilterChip: React.FC<{ active: boolean; label: string; onClick: () => void }> = ({
+  active,
+  label,
+  onClick,
+}) => (
+  <button
+    onClick={onClick}
+    className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-bold shadow-md backdrop-blur-md transition-all whitespace-nowrap ${
+      active ? 'bg-goun-rose text-white shadow-goun-rose/25' : 'bg-white/95 text-warm-taupe/70 hover:bg-white hover:text-goun-rose'
+    }`}
+  >
+    {label}
+  </button>
+);
