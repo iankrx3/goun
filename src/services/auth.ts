@@ -7,6 +7,15 @@ import { fetchCreatorByUserId } from './places';
 export { isSupabaseConfigured };
 
 const RETURN_TAB_KEY = 'goun_auth_return_tab';
+const MOCK_SESSION_KEY = 'goun_mock_session';
+
+export const DEMO_USER: NonNullable<UserSession['user']> = {
+  id: 'mock-user',
+  google_id: 'mock-google',
+  email: 'demo@goun.app',
+  name: 'Goun Demo',
+  avatar_url: 'https://ui-avatars.com/api/?name=Goun+Demo&background=B98278&color=fff',
+};
 
 export type AuthReturnTab = 'explore' | 'map' | 'community' | string;
 
@@ -35,7 +44,38 @@ export async function signInWithGoogle(returnTab: AuthReturnTab = 'explore') {
   if (error) throw error;
 }
 
+export function signInAsDemo(): UserSession {
+  const session: UserSession = { isLoggedIn: true, user: DEMO_USER };
+  try {
+    localStorage.setItem(MOCK_SESSION_KEY, JSON.stringify(session));
+  } catch {
+    // private mode / quota — session still works for this tab
+  }
+  return session;
+}
+
+export function loadMockSession(): UserSession | null {
+  try {
+    const raw = localStorage.getItem(MOCK_SESSION_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as UserSession;
+    if (parsed?.isLoggedIn && parsed.user?.id) return parsed;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+export function clearMockSession() {
+  try {
+    localStorage.removeItem(MOCK_SESSION_KEY);
+  } catch {
+    // ignore
+  }
+}
+
 export async function signOut() {
+  clearMockSession();
   if (!supabase) return;
   const { error } = await supabase.auth.signOut();
   if (error) throw error;

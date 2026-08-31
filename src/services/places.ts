@@ -7,46 +7,80 @@ import {
   mockPlaces,
   mockTreatments,
 } from '../data/mock';
+import {
+  catalogPlace,
+  catalogTreatment,
+  discoverAll,
+} from './discovery';
+import { getApiHealth } from './googlePlaces';
 
-// Every fetcher below tries live Supabase tables first (places, creators,
-// creator_picks, treatments — see Goun_PRD_v2_KTO_Design.md §8 for the
-// intended schema) and falls back to the bundled demo dataset whenever
-// Supabase isn't configured or the query errors. Swap this file over to a
-// dedicated API layer once the real Place/Treatment DB and KTO batch tables
-// (§7.6: wellness_spots, medical_tourism_orgs) exist.
+async function liveCatalog() {
+  const health = await getApiHealth();
+  if (!health.google && !health.kto) return null;
+  try {
+    const result = await discoverAll();
+    if (result.places.length === 0) return null;
+    return result;
+  } catch (err) {
+    console.warn('Live place discovery failed; using mock data', err);
+    return null;
+  }
+}
+
+async function livePlaces(): Promise<Place[] | null> {
+  const catalog = await liveCatalog();
+  return catalog?.places ?? null;
+}
+
+async function liveTreatments(): Promise<Treatment[] | null> {
+  const catalog = await liveCatalog();
+  return catalog?.treatments ?? null;
+}
 
 export async function fetchPlaces(): Promise<Place[]> {
-  if (!supabase) return mockPlaces;
+  if (!supabase) {
+    return (await livePlaces()) ?? mockPlaces;
+  }
   try {
     const { data, error } = await supabase.from('places').select('*');
     if (error) throw error;
-    if (!data || data.length === 0) return mockPlaces;
+    if (!data || data.length === 0) return (await livePlaces()) ?? mockPlaces;
     return data.map(mapPlace);
   } catch {
-    return mockPlaces;
+    return (await livePlaces()) ?? mockPlaces;
   }
 }
 
 export async function fetchPlaceById(id: string): Promise<Place | null> {
+  const remembered = catalogPlace(id);
+  if (remembered) return remembered;
+  const mock = mockPlaces.find((place) => place.id === id);
+  if (mock) return mock;
   const places = await fetchPlaces();
-  return places.find((p) => p.id === id) ?? null;
+  return places.find((place) => place.id === id) ?? null;
 }
 
 export async function fetchTreatments(): Promise<Treatment[]> {
-  if (!supabase) return mockTreatments;
+  if (!supabase) {
+    return (await liveTreatments()) ?? mockTreatments;
+  }
   try {
     const { data, error } = await supabase.from('treatments').select('*');
     if (error) throw error;
-    if (!data || data.length === 0) return mockTreatments;
+    if (!data || data.length === 0) return (await liveTreatments()) ?? mockTreatments;
     return data as Treatment[];
   } catch {
-    return mockTreatments;
+    return (await liveTreatments()) ?? mockTreatments;
   }
 }
 
 export async function fetchTreatmentById(id: string): Promise<Treatment | null> {
+  const remembered = catalogTreatment(id);
+  if (remembered) return remembered;
+  const mock = mockTreatments.find((treatment) => treatment.id === id);
+  if (mock) return mock;
   const treatments = await fetchTreatments();
-  return treatments.find((t) => t.id === id) ?? null;
+  return treatments.find((treatment) => treatment.id === id) ?? null;
 }
 
 export async function fetchCreators(): Promise<Creator[]> {

@@ -1,4 +1,5 @@
 import { MatchResult, Place, QuizAnswers, Treatment } from '../types';
+import { discoverPlaces } from './discovery';
 import { fetchPlaceById, fetchTreatments } from './places';
 
 // AI Matching & Place Ranking — Goun_PRD_v2_KTO_Design.md §9.
@@ -49,18 +50,41 @@ function concernFit(concerns: string[], treatment: Treatment): number {
   return Math.min(1, hit / Math.min(concerns.length, treatment.concern.length || 1));
 }
 
-export async function getMatches(answers: QuizAnswers): Promise<MatchResult[]> {
-  const treatments = await fetchTreatments();
-  const candidates = answers.category
-    ? treatments.filter((t) => t.category === answers.category)
-    : treatments;
+export async function getMatches(
+  answers: QuizAnswers,
+  origin?: { lat: number; lng: number }
+): Promise<MatchResult[]> {
+  let candidates: Treatment[] = [];
+  const placeById = new Map<string, Place>();
+
+  if (answers.category) {
+    try {
+      const live = await discoverPlaces({
+        category: answers.category,
+        origin,
+        keywordHints: answers.concerns,
+        englishFriendly: answers.other.includes('English Friendly') || answers.other.includes('First Time'),
+      });
+      if (live.treatments.length > 0) {
+        candidates = live.treatments;
+        for (const place of live.places) placeById.set(place.id, place);
+      }
+    } catch (err) {
+      console.warn('Live matching failed; falling back to mock treatments', err);
+    }
+  }
+
+  if (candidates.length === 0) {
+    const treatments = await fetchTreatments();
+    candidates = answers.category ? treatments.filter((t) => t.category === answers.category) : treatments;
+  }
 
   const wantsEnglish = answers.other.includes('English Friendly');
   const wantsForeignerFirst = answers.other.includes('First Time');
 
   const scored = await Promise.all(
     candidates.map(async (treatment) => {
-      const place = await fetchPlaceById(treatment.placeId);
+      const place = placeById.get(treatment.placeId) ?? (await fetchPlaceById(treatment.placeId));
       if (!place) return null;
 
       const cFit = concernFit(answers.concerns, treatment);

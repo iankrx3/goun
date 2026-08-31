@@ -87,6 +87,9 @@ export interface Place {
   nearbyWellness?: WellnessSpot[];
   /** §7.3 — Medical tourism trust badge. Absent → badge silently hidden, never shown as "unverified". */
   medicalTourismMatch?: MedicalTourismMatch;
+  source?: 'google' | 'kto' | 'merged' | 'mock';
+  googlePlaceId?: string;
+  ktoContentId?: string;
 }
 
 export interface MatchResult {

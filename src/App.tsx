@@ -11,7 +11,7 @@ import TreatmentDetailPage from './pages/TreatmentDetailPage';
 import type { AuthReturnTab } from './services/auth';
 
 export default function App() {
-  const { authReady, session, returnTab, signOut } = useAuth();
+  const { authReady, session, returnTab, signOut, signInAsDemo } = useAuth();
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const location = useLocation();
 
@@ -45,7 +45,12 @@ export default function App() {
         <Route path="/treatment/:id" element={<TreatmentDetailPage />} />
       </Routes>
 
-      <GoogleAuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} returnTab={authReturnTab} />
+      <GoogleAuthModal
+        isOpen={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
+        returnTab={authReturnTab}
+        onDemoSignIn={signInAsDemo}
+      />
     </div>
   );
 }

@@ -25,6 +25,9 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, rank }) => {
 
       <h3 className="mt-2 text-lg font-semibold text-warm-taupe">{treatment.name}</h3>
       <p className="text-xs text-warm-taupe/60">{place.name} · {place.area}</p>
+      {place.medicalTourismMatch && (
+        <p className="mt-1 text-[11px] text-warm-taupe/50">Registered with Korea Medical Tourism Info (KTO)</p>
+      )}
 
       <div className="mt-3 flex flex-wrap gap-1.5">
         {reasons.map((reason) => (

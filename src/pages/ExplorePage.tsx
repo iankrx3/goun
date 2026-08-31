@@ -60,7 +60,17 @@ export default function ExplorePage() {
   };
 
   const handleTransitionDone = async () => {
-    const matches = await getMatches(answers);
+    let origin: { lat: number; lng: number } | undefined;
+    if (answers.other.includes('Near Me') && navigator.geolocation) {
+      origin = await new Promise((resolve) => {
+        navigator.geolocation.getCurrentPosition(
+          (position) => resolve({ lat: position.coords.latitude, lng: position.coords.longitude }),
+          () => resolve(undefined),
+          { enableHighAccuracy: true, timeout: 4000, maximumAge: 60_000 }
+        );
+      });
+    }
+    const matches = await getMatches(answers, origin);
     setResults(matches);
     setStep('results');
   };

@@ -1,15 +1,22 @@
 import { useEffect, useState } from 'react';
 import type { Creator, UserSession } from '../types';
 import { supabase } from '../lib/supabase';
-import { buildUserSession, consumeReturnTab, signOut as authSignOut } from '../services/auth';
+import {
+  buildUserSession,
+  consumeReturnTab,
+  loadMockSession,
+  signInAsDemo as authSignInAsDemo,
+  signOut as authSignOut,
+} from '../services/auth';
 
 export function useAuth() {
-  const [authReady, setAuthReady] = useState(!supabase);
+  const [authReady, setAuthReady] = useState(false);
   const [session, setSession] = useState<UserSession>({ isLoggedIn: false });
   const [returnTab, setReturnTab] = useState<string | null>(null);
 
   useEffect(() => {
     if (!supabase) {
+      setSession(loadMockSession() ?? { isLoggedIn: false });
       setAuthReady(true);
       return;
     }
@@ -22,13 +29,14 @@ export function useAuth() {
     supabase.auth.getSession().then(async ({ data }) => {
       if (!mounted) return;
       const next = await buildUserSession(data.session?.user ?? null);
-      setSession(next);
       if (next.isLoggedIn) {
+        setSession(next);
         const tab = consumeReturnTab();
         if (tab) setReturnTab(tab);
         setAuthReady(true);
         return;
       }
+      setSession(loadMockSession() ?? { isLoggedIn: false });
       if (!isAuthCallback) setAuthReady(true);
     });
 
@@ -37,7 +45,7 @@ export function useAuth() {
     } = supabase.auth.onAuthStateChange((event, authSession) => {
       if (event === 'SIGNED_OUT' || !authSession?.user) {
         if (event === 'INITIAL_SESSION' && isAuthCallback) return;
-        setSession({ isLoggedIn: false });
+        setSession(event === 'SIGNED_OUT' ? { isLoggedIn: false } : loadMockSession() ?? { isLoggedIn: false });
         setAuthReady(true);
         return;
       }
@@ -59,6 +67,10 @@ export function useAuth() {
     };
   }, []);
 
+  const signInAsDemo = () => {
+    setSession(authSignInAsDemo());
+  };
+
   const signOut = async () => {
     await authSignOut();
     setSession({ isLoggedIn: false });
@@ -74,6 +86,7 @@ export function useAuth() {
     returnTab,
     setSession,
     signOut,
+    signInAsDemo,
     onCreatorUpdated,
   };
 }

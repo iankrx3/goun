@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
+import { X, Sparkles, CheckCircle2, AlertCircle, User } from 'lucide-react';
 import { isSupabaseConfigured, signInWithGoogle, type AuthReturnTab } from '../services/auth';
 
 interface GoogleAuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   returnTab?: AuthReturnTab;
+  onDemoSignIn: () => void;
 }
 
 export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
   isOpen,
   onClose,
   returnTab = 'explore',
+  onDemoSignIn,
 }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +24,7 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
   const handleGoogleSignIn = async () => {
     setError(null);
     if (!isSupabaseConfigured) {
-      setError('Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
+      setError('Google sign-in needs Supabase keys. Use Continue as demo, or add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
       return;
     }
 
@@ -33,6 +35,12 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
       setLoading(false);
       setError(err?.message || 'Google sign-in failed. Please try again.');
     }
+  };
+
+  const handleDemoSignIn = () => {
+    setError(null);
+    onDemoSignIn();
+    onClose();
   };
 
   return (
@@ -66,11 +74,24 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
             </div>
             <h3 className="font-display text-2xl tracking-tight text-warm-taupe">Welcome to Goun</h3>
             <p className="mt-1.5 text-xs text-warm-taupe/70 leading-relaxed">
-              Sign in with Google to save places to My Map and follow your Korean beauty trip.
+              Sign in to save places to My Map. Demo login works without any API keys.
             </p>
           </div>
 
           <div className="space-y-3">
+            <button
+              onClick={handleDemoSignIn}
+              disabled={loading}
+              className={`group flex w-full items-center justify-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold shadow-sm active:scale-[0.99] transition-all disabled:opacity-50 cursor-pointer ${
+                isSupabaseConfigured
+                  ? 'border border-han-cream bg-white text-warm-taupe hover:bg-han-cream/30'
+                  : 'bg-goun-rose text-white shadow-goun-rose/30 hover:opacity-95'
+              }`}
+            >
+              <User className="h-4 w-4" />
+              <span>Continue as demo</span>
+            </button>
+
             <button
               onClick={handleGoogleSignIn}
               disabled={loading}
@@ -95,7 +116,11 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
 
           <div className="mt-6 flex items-center justify-center gap-1.5 text-[11px] text-warm-taupe/60">
             <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-            <span>Secure Google OAuth via Supabase Auth</span>
+            <span>
+              {isSupabaseConfigured
+                ? 'Secure Google OAuth via Supabase Auth'
+                : 'Demo login is stored only in this browser'}
+            </span>
           </div>
         </motion.div>
       </div>

@@ -10,6 +10,8 @@ Leaflet/MapTiler (map), matching `extract/README.md`. Chosen over the PRD's
 Next.js listing (§13) to reuse the extract kit directly instead of rewriting
 its Vite-specific auth/map code for the App Router.
 
+레이어별 기능 설명: [`docs/architecture.md`](docs/architecture.md).
+
 ## Getting started
 
 ```bash
@@ -18,10 +20,31 @@ cp .env.example .env.local   # optional — the app runs fully on demo data with
 npm run dev
 ```
 
-Without `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY`, sign-in is disabled (with an
-inline message) and every data call falls back to `src/data/mock.ts`. Without
-`VITE_MAPTILER_API_KEY`, the map uses the free Carto Voyager basemap instead of
-MapTiler. See `extract/README.md` for the Google OAuth + Supabase provider setup.
+Without `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY`, Google OAuth is skipped and
+**Continue as demo** still signs you in locally (stored in `localStorage`). Every
+data call falls back to `src/data/mock.ts` unless the place-discovery keys below
+are set. Without `VITE_MAPTILER_API_KEY`, the map uses the free Carto Voyager
+basemap instead of MapTiler.
+
+### Live place discovery (optional)
+
+Add these **server-only** keys to `.env.local` (no `VITE_` prefix — the Vite
+proxy injects them so they never reach the browser):
+
+```
+KTO_SERVICE_KEY=          # data.go.kr, service MdclTursmService (의료관광정보)
+GOOGLE_PLACES_API_KEY=    # Google Cloud Places API (New)
+```
+
+- KTO key: [한국관광공사_의료관광정보](https://www.data.go.kr/data/15143913/openapi.do) → 활용신청. Use the Decoding or Encoding key; the proxy normalises either.
+- Google key: enable **Places API (New)** on a Cloud project. Restrict it to `localhost` HTTP referrers for local work.
+
+`src/services/discovery.ts` maps each beauty category to Google Place types and,
+for `skin` / `face`, overlays KTO-certified medical-tourism orgs (badge +
+languages). Hair / nails / makeup are Google-primary. If a key is missing or a
+call fails, the app keeps serving mock data. KTO responses must be attributed
+`자료: 한국관광공사` (already on the medical/wellness badges). Development
+quota on data.go.kr is 1,000 calls/day — results are cached for 10 minutes.
 
 ## What's implemented
 
@@ -31,8 +54,11 @@ MapTiler. See `extract/README.md` for the Google OAuth + Supabase provider setup
   `extract/src/components/MapView.tsx`; category/pick filters, search, geolocation,
   and a Warm-Taupe KTO Wellness pin layer per §15.3.
 - **Login** (`src/hooks/useAuth.ts`, `src/services/auth.ts`,
-  `src/components/GoogleAuthModal.tsx`) — ported from `extract/`, restyled to the
-  Goun brand tokens.
+  `src/components/GoogleAuthModal.tsx`) — Google OAuth when Supabase is
+  configured, plus a local **Continue as demo** session that does not need keys.
+- **Place discovery** (`src/services/discovery.ts`) — category engine over
+  Google Places API (New) + KTO `MdclTursmService`. Vite proxy in
+  `plugins/goun-api-proxy.ts` hides the keys and avoids browser CORS.
 - **Place / Treatment detail** — Nearby Wellness and Medical Info KTO badges
   (§7.2/§7.3), fail-silent when their data is absent.
 - **Community** — read-only feed (Post/Like/Comment are "MVP 이후" per §5).
@@ -47,11 +73,11 @@ MapTiler. See `extract/README.md` for the Google OAuth + Supabase provider setup
 
 - Creator profile pages, Creator Map, and Community write actions (post/like/
   follow) are not built — out of MVP scope per §11.
-- Treatment/Place data is the bundled demo set in `src/data/mock.ts`, not a real
-  database — wire `src/services/places.ts` to actual `places`/`treatments`/
-  `creators`/`creator_picks` tables when they exist.
-- `wellness_spots` / `medical_tourism_orgs` KTO batch tables (§7.6) don't exist;
-  wellness/medical data is hand-authored per mock place. The real Swagger
-  schema from data.go.kr still needs confirming per the PRD's open items.
-- No nightly batch job, CDN image proxy, or geo-radius matching (§7.6) — all
-  data is static.
+- Treatment/Place data is live when `KTO_SERVICE_KEY` / `GOOGLE_PLACES_API_KEY`
+  are set, otherwise the bundled demo set in `src/data/mock.ts`. Wire
+  `src/services/places.ts` to actual `places`/`treatments`/`creators`/
+  `creator_picks` tables when they exist.
+- Nearby Wellness (`WellnessTursmService`) is still mock-only; medical-tourism
+  badges on live `skin`/`face` places come from `MdclTursmService`.
+- No nightly batch job. Discovery is on-demand with a 10-minute in-memory cache.
+  The API proxy only runs under `vite` / `vite preview`, not on a static host.
