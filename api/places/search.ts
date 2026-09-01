@@ -1,0 +1,34 @@
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { PLACES_BASE, PLACES_FIELD_MASK } from '../_lib/proxy.js';
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
+  }
+
+  const googleKey = process.env.GOOGLE_PLACES_API_KEY;
+  if (!googleKey) {
+    res.status(503).json({ error: 'not_configured', service: 'google' });
+    return;
+  }
+
+  const payload: { mode?: string } & Record<string, unknown> = { ...(req.body ?? {}) };
+  const mode = payload.mode === 'text' ? 'text' : 'nearby';
+  delete payload.mode;
+  const path = mode === 'text' ? 'places:searchText' : 'places:searchNearby';
+
+  const response = await fetch(`${PLACES_BASE}/${path}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Goog-Api-Key': googleKey,
+      'X-Goog-FieldMask': PLACES_FIELD_MASK,
+    },
+    body: JSON.stringify(payload),
+  });
+  const text = await response.text();
+  res.status(response.status);
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.send(text);
+}

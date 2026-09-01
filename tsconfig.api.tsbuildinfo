@@ -1,0 +1,1 @@
+{"root":["./api/health.ts","./api/_lib/proxy.ts","./api/gemini/ground.ts","./api/kto/[...op].ts","./api/places/photo.ts","./api/places/search.ts"],"version":"5.9.3"}
