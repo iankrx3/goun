@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { CommunityPost, UserSession } from '../../types';
 import type { CreatePostInput } from '../../services/community';
+import { DEMO_USER } from '../../services/auth';
 
 interface PostComposerProps {
   session: UserSession;
@@ -82,6 +83,13 @@ export const PostComposer: React.FC<PostComposerProps> = ({ session, onSignIn, o
           {submitting ? 'Posting…' : 'Post'}
         </button>
       </div>
+
+      {session.user.id === DEMO_USER.id && (
+        <p className="mt-2.5 text-[11px] text-warm-taupe/50">
+          Demo mode saves to this browser only. Sign in with Google to keep your posts, likes, and comments across
+          logins and devices.
+        </p>
+      )}
     </div>
   );
 };

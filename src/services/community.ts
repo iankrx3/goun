@@ -2,6 +2,7 @@ import { CommunityPost, PostComment, UserSession } from '../types';
 import { mapCommunityPost, mapPostComment } from '../lib/mappers';
 import { supabase } from '../lib/supabase';
 import { mockCommunityPosts } from '../data/mock';
+import { DEMO_USER } from './auth';
 import {
   bumpLocalPostCounts,
   readLikedPostIds,
@@ -25,6 +26,10 @@ export interface AddCommentInput {
   text: string;
 }
 
+function isDemoSession(session: UserSession): boolean {
+  return session.user?.id === DEMO_USER.id;
+}
+
 function mockPostsWithLocal(): CommunityPost[] {
   const liked = readLikedPostIds();
   return [...readLocalPosts(), ...mockCommunityPosts].map((post) => ({
@@ -33,15 +38,19 @@ function mockPostsWithLocal(): CommunityPost[] {
   }));
 }
 
+function sortByCreatedAtDesc(posts: CommunityPost[]): CommunityPost[] {
+  return [...posts].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
 export async function fetchCommunityPosts(viewerId?: string): Promise<CommunityPost[]> {
-  if (!supabase) return mockPostsWithLocal();
+  const local = mockPostsWithLocal();
+  if (!supabase) return sortByCreatedAtDesc(local);
   try {
     const { data, error } = await supabase
       .from('community_posts')
       .select('*, post_likes(count), post_comments(count)')
       .order('created_at', { ascending: false });
     if (error) throw error;
-    if (!data || data.length === 0) return mockPostsWithLocal();
 
     let likedIds = new Set<string>();
     if (viewerId) {
@@ -49,9 +58,10 @@ export async function fetchCommunityPosts(viewerId?: string): Promise<CommunityP
       likedIds = new Set((likes ?? []).map((l: any) => l.post_id));
     }
 
-    return data.map((row: any) => mapCommunityPost(row, undefined, likedIds.has(row.id)));
+    const remote = (data ?? []).map((row: any) => mapCommunityPost(row, undefined, likedIds.has(row.id)));
+    return sortByCreatedAtDesc([...remote, ...local]);
   } catch {
-    return mockPostsWithLocal();
+    return sortByCreatedAtDesc(local);
   }
 }
 
@@ -93,7 +103,7 @@ export async function createCommunityPost(input: CreatePostInput, session: UserS
   if (!session.isLoggedIn || !session.user) throw new Error('Must be signed in to post.');
   const author = session.user;
 
-  if (supabase) {
+  if (supabase && !isDemoSession(session)) {
     try {
       const { data, error } = await supabase
         .from('community_posts')
@@ -113,7 +123,7 @@ export async function createCommunityPost(input: CreatePostInput, session: UserS
       if (error) throw error;
       return mapCommunityPost(data, { likeCount: 0, commentCount: 0 }, false);
     } catch {
-      // fall through to local fallback (e.g. demo user has no real auth.users row)
+      // fall through to local fallback (Supabase write failed unexpectedly)
     }
   }
 
@@ -142,7 +152,7 @@ export async function toggleLike(postId: string, session: UserSession): Promise<
   const userId = session.user.id;
   const isLocalPost = postId.startsWith('local-') || readLocalPosts().some((p) => p.id === postId);
 
-  if (supabase && !isLocalPost) {
+  if (supabase && !isLocalPost && !isDemoSession(session)) {
     try {
       const { data: existing } = await supabase
         .from('post_likes')
@@ -190,7 +200,7 @@ export async function addComment(postId: string, input: AddCommentInput, session
   const author = session.user;
   const isLocalPost = postId.startsWith('local-') || readLocalPosts().some((p) => p.id === postId);
 
-  if (supabase && !isLocalPost) {
+  if (supabase && !isLocalPost && !isDemoSession(session)) {
     try {
       const { data, error } = await supabase
         .from('post_comments')
