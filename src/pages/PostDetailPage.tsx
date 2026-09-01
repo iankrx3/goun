@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import type { CommunityPost, UserSession } from '../types';
-import { fetchCommunityPostById, toggleLike } from '../services/community';
+import { deleteCommunityPost, fetchCommunityPostById, toggleLike } from '../services/community';
 import { PostCard } from '../components/community/PostCard';
 
 interface PostDetailPageProps {
@@ -12,6 +12,7 @@ interface PostDetailPageProps {
 
 export default function PostDetailPage({ session, onSignIn }: PostDetailPageProps) {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [post, setPost] = useState<CommunityPost | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -36,6 +37,12 @@ export default function PostDetailPage({ session, onSignIn }: PostDetailPageProp
     }
   };
 
+  const handleDeletePost = async () => {
+    if (!post) return;
+    await deleteCommunityPost(post.id, session);
+    navigate('/community');
+  };
+
   if (loading) return <div className="px-4 py-10 text-sm text-warm-taupe/60">Loading…</div>;
   if (!post) return <div className="px-4 py-10 text-sm text-warm-taupe/60">Post not found.</div>;
 
@@ -45,7 +52,14 @@ export default function PostDetailPage({ session, onSignIn }: PostDetailPageProp
         <ChevronLeft className="h-3.5 w-3.5" /> Back to community
       </Link>
 
-      <PostCard post={post} session={session} onSignIn={onSignIn} onLikeToggle={handleLikeToggle} defaultExpanded />
+      <PostCard
+        post={post}
+        session={session}
+        onSignIn={onSignIn}
+        onLikeToggle={handleLikeToggle}
+        onDeletePost={handleDeletePost}
+        defaultExpanded
+      />
     </div>
   );
 }

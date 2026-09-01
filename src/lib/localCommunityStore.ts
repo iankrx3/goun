@@ -32,6 +32,14 @@ export function saveLocalPost(post: CommunityPost) {
   writeJson(POSTS_KEY, [post, ...readLocalPosts()]);
 }
 
+export function removeLocalPost(postId: string) {
+  writeJson(POSTS_KEY, readLocalPosts().filter((p) => p.id !== postId));
+  writeJson(LIKED_KEY, readLikedPostIds().filter((id) => id !== postId));
+  const allComments = readJson<Record<string, PostComment[]>>(COMMENTS_KEY, {});
+  delete allComments[postId];
+  writeJson(COMMENTS_KEY, allComments);
+}
+
 export function readLikedPostIds(): string[] {
   return readJson<string[]>(LIKED_KEY, []);
 }
@@ -51,6 +59,12 @@ export function readLocalComments(postId: string): PostComment[] {
 export function saveLocalComment(postId: string, comment: PostComment) {
   const all = readJson<Record<string, PostComment[]>>(COMMENTS_KEY, {});
   all[postId] = [...(all[postId] ?? []), comment];
+  writeJson(COMMENTS_KEY, all);
+}
+
+export function removeLocalComment(postId: string, commentId: string) {
+  const all = readJson<Record<string, PostComment[]>>(COMMENTS_KEY, {});
+  all[postId] = (all[postId] ?? []).filter((c) => c.id !== commentId);
   writeJson(COMMENTS_KEY, all);
 }
 

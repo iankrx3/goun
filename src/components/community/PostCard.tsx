@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, MessageCircle, Star } from 'lucide-react';
+import { Heart, MessageCircle, Star, Trash2 } from 'lucide-react';
 import type { CommunityPost, PostComment, UserSession } from '../../types';
-import { addComment, fetchComments } from '../../services/community';
+import { addComment, deleteComment, fetchComments } from '../../services/community';
 import { ShareButton } from './ShareButton';
 
 interface PostCardProps {
@@ -10,15 +10,25 @@ interface PostCardProps {
   session: UserSession;
   onSignIn: () => void;
   onLikeToggle: (postId: string) => void;
+  onDeletePost?: (postId: string) => Promise<void> | void;
   defaultExpanded?: boolean;
 }
 
-export const PostCard: React.FC<PostCardProps> = ({ post, session, onSignIn, onLikeToggle, defaultExpanded }) => {
+export const PostCard: React.FC<PostCardProps> = ({
+  post,
+  session,
+  onSignIn,
+  onLikeToggle,
+  onDeletePost,
+  defaultExpanded,
+}) => {
   const [expanded, setExpanded] = useState(Boolean(defaultExpanded));
   const [comments, setComments] = useState<PostComment[]>([]);
   const [commentsLoaded, setCommentsLoaded] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  const isOwnPost = Boolean(session.user?.id) && session.user?.id === post.authorId;
 
   useEffect(() => {
     if (expanded && !commentsLoaded) {
@@ -47,6 +57,19 @@ export const PostCard: React.FC<PostCardProps> = ({ post, session, onSignIn, onL
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleDeletePost = async () => {
+    if (!onDeletePost) return;
+    if (!window.confirm('게시글을 삭제할까요?')) return;
+    await onDeletePost(post.id);
+  };
+
+  const handleDeleteComment = async (comment: PostComment) => {
+    if (!session.user) return;
+    if (!window.confirm('댓글을 삭제할까요?')) return;
+    await deleteComment(post.id, comment.id, session);
+    setComments((prev) => prev.filter((c) => c.id !== comment.id));
   };
 
   return (
@@ -139,6 +162,15 @@ export const PostCard: React.FC<PostCardProps> = ({ post, session, onSignIn, onL
           </Link>
         )}
         <ShareButton postId={post.id} title={post.text} />
+        {isOwnPost && onDeletePost && (
+          <button
+            onClick={handleDeletePost}
+            className="ml-auto flex items-center gap-1.5 text-xs font-semibold text-warm-taupe/50 hover:text-red-500"
+            aria-label="게시글 삭제"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        )}
       </div>
 
       {expanded && (
@@ -154,9 +186,20 @@ export const PostCard: React.FC<PostCardProps> = ({ post, session, onSignIn, onL
                 referrerPolicy="no-referrer"
                 className="h-6 w-6 shrink-0 rounded-full object-cover"
               />
-              <div className="rounded-2xl bg-han-cream/50 px-3 py-1.5 text-xs text-warm-taupe">
-                <span className="font-semibold">{c.authorName}</span>{' '}
-                <span className="text-warm-taupe/80">{c.text}</span>
+              <div className="flex items-center gap-1.5 rounded-2xl bg-han-cream/50 px-3 py-1.5 text-xs text-warm-taupe">
+                <span>
+                  <span className="font-semibold">{c.authorName}</span>{' '}
+                  <span className="text-warm-taupe/80">{c.text}</span>
+                </span>
+                {session.user?.id === c.authorId && (
+                  <button
+                    onClick={() => handleDeleteComment(c)}
+                    className="shrink-0 text-warm-taupe/40 hover:text-red-500"
+                    aria-label="댓글 삭제"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                )}
               </div>
             </div>
           ))}

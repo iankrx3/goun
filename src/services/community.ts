@@ -8,6 +8,8 @@ import {
   readLikedPostIds,
   readLocalComments,
   readLocalPosts,
+  removeLocalComment,
+  removeLocalPost,
   saveLocalComment,
   saveLocalPost,
   toggleLocalLike,
@@ -179,6 +181,24 @@ export async function toggleLike(postId: string, session: UserSession): Promise<
   return { liked };
 }
 
+export async function deleteCommunityPost(postId: string, session: UserSession): Promise<void> {
+  if (!session.isLoggedIn || !session.user) throw new Error('Must be signed in to delete a post.');
+  const isLocalPost = postId.startsWith('local-') || readLocalPosts().some((p) => p.id === postId);
+
+  if (isLocalPost) {
+    removeLocalPost(postId);
+    return;
+  }
+
+  if (!supabase) throw new Error('Unable to delete post.');
+  const { error } = await supabase
+    .from('community_posts')
+    .delete()
+    .eq('id', postId)
+    .eq('author_id', session.user.id);
+  if (error) throw error;
+}
+
 export async function fetchComments(postId: string): Promise<PostComment[]> {
   const local = readLocalComments(postId);
   if (!supabase) return local;
@@ -232,4 +252,22 @@ export async function addComment(postId: string, input: AddCommentInput, session
   saveLocalComment(postId, comment);
   bumpLocalPostCounts(postId, { comment: 1 });
   return comment;
+}
+
+export async function deleteComment(postId: string, commentId: string, session: UserSession): Promise<void> {
+  if (!session.isLoggedIn || !session.user) throw new Error('Must be signed in to delete a comment.');
+  const isLocalComment = commentId.startsWith('local-');
+
+  if (isLocalComment) {
+    removeLocalComment(postId, commentId);
+    return;
+  }
+
+  if (!supabase) throw new Error('Unable to delete comment.');
+  const { error } = await supabase
+    .from('post_comments')
+    .delete()
+    .eq('id', commentId)
+    .eq('author_id', session.user.id);
+  if (error) throw error;
 }

@@ -3,6 +3,7 @@ import type { CommunityPost, UserSession } from '../types';
 import {
   CreatePostInput,
   createCommunityPost,
+  deleteCommunityPost,
   fetchCommunityPosts,
   toggleLike as toggleLikeService,
 } from '../services/community';
@@ -53,5 +54,13 @@ export function useCommunityPosts(session: UserSession) {
     [posts, session]
   );
 
-  return { posts, loading, createPost, toggleLike, refresh };
+  const deletePost = useCallback(
+    async (postId: string) => {
+      await deleteCommunityPost(postId, session);
+      setPosts((prev) => prev.filter((p) => p.id !== postId));
+    },
+    [session]
+  );
+
+  return { posts, loading, createPost, toggleLike, deletePost, refresh };
 }

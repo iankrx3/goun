@@ -19,7 +19,7 @@ const CATEGORIES: { id: CommunityPost['category'] | 'all'; label: string }[] = [
 
 export default function CommunityPage({ session, onSignIn }: CommunityPageProps) {
   const [filter, setFilter] = useState<(typeof CATEGORIES)[number]['id']>('all');
-  const { posts, loading, createPost, toggleLike } = useCommunityPosts(session);
+  const { posts, loading, createPost, toggleLike, deletePost } = useCommunityPosts(session);
 
   const filteredPosts = filter === 'all' ? posts : posts.filter((p) => p.category === filter);
 
@@ -53,7 +53,14 @@ export default function CommunityPage({ session, onSignIn }: CommunityPageProps)
       ) : (
         <div className="space-y-3">
           {filteredPosts.map((post) => (
-            <PostCard key={post.id} post={post} session={session} onSignIn={onSignIn} onLikeToggle={toggleLike} />
+            <PostCard
+              key={post.id}
+              post={post}
+              session={session}
+              onSignIn={onSignIn}
+              onLikeToggle={toggleLike}
+              onDeletePost={deletePost}
+            />
           ))}
         </div>
       )}

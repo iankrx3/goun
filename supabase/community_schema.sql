@@ -50,3 +50,4 @@ create policy "authors delete own posts" on community_posts for delete using (au
 create policy "users like as self" on post_likes for insert with check (auth.uid() = user_id);
 create policy "users unlike as self" on post_likes for delete using (auth.uid() = user_id);
 create policy "authors insert own comments" on post_comments for insert with check (auth.uid() = author_id);
+create policy "authors delete own comments" on post_comments for delete using (auth.uid() = author_id);
