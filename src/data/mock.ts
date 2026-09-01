@@ -348,6 +348,8 @@ export const mockCommunityPosts: CommunityPost[] = [
     text: 'Zero downtime and my pigmentation is already fading after one session. Staff spoke perfect English.',
     rating: 5,
     createdAt: '2026-08-20T00:00:00Z',
+    likeCount: 12,
+    commentCount: 2,
   },
   {
     id: 'post-2',
@@ -360,6 +362,8 @@ export const mockCommunityPosts: CommunityPost[] = [
     text: 'Whole salon felt like a magazine shoot. Got the exact perm I showed them from a reference photo.',
     rating: 5,
     createdAt: '2026-08-22T00:00:00Z',
+    likeCount: 8,
+    commentCount: 0,
   },
   {
     id: 'post-3',
@@ -368,6 +372,8 @@ export const mockCommunityPosts: CommunityPost[] = [
     category: 'questions',
     text: 'Anyone know a clinic near Hongdae for a quick pore facial before a night out? First time in Seoul.',
     createdAt: '2026-08-24T00:00:00Z',
+    likeCount: 1,
+    commentCount: 3,
   },
   {
     id: 'post-4',
@@ -380,6 +386,8 @@ export const mockCommunityPosts: CommunityPost[] = [
     text: 'Booked this for my last day in Seoul for photos. So worth it, they really listened to what I wanted.',
     rating: 4,
     createdAt: '2026-08-25T00:00:00Z',
+    likeCount: 5,
+    commentCount: 1,
   },
 ];
 

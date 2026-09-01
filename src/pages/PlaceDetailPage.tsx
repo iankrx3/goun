@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Bookmark, ChevronLeft, Navigation, Star } from 'lucide-react';
-import type { Place, Treatment } from '../types';
+import type { CommunityPost, Place, Treatment } from '../types';
 import { fetchPlaceById, fetchTreatments } from '../services/places';
-import { mockCommunityPosts } from '../data/mock';
+import { fetchCommunityPosts } from '../services/community';
 import { useSavedPlaces } from '../hooks/useSavedPlaces';
 import { MedicalTourismSection, NearbyWellnessSection } from '../components/badges/KtoBadges';
 import { GroundedInfo } from '../components/GroundedInfo';
@@ -13,24 +13,24 @@ export default function PlaceDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [place, setPlace] = useState<Place | null>(null);
   const [treatments, setTreatments] = useState<Treatment[]>([]);
+  const [reviews, setReviews] = useState<CommunityPost[]>([]);
   const [loading, setLoading] = useState(true);
   const { isSaved, toggleSave } = useSavedPlaces();
 
   useEffect(() => {
     if (!id) return;
     setLoading(true);
-    Promise.all([fetchPlaceById(id), fetchTreatments()])
-      .then(([p, allTreatments]) => {
+    Promise.all([fetchPlaceById(id), fetchTreatments(), fetchCommunityPosts()])
+      .then(([p, allTreatments, posts]) => {
         setPlace(p);
         setTreatments(allTreatments.filter((t) => p?.treatmentIds.includes(t.id)));
+        setReviews(posts.filter((post) => post.placeId === id));
       })
       .finally(() => setLoading(false));
   }, [id]);
 
   if (loading) return <div className="px-4 py-10 text-sm text-warm-taupe/60">Loading…</div>;
   if (!place) return <div className="px-4 py-10 text-sm text-warm-taupe/60">Place not found.</div>;
-
-  const reviews = mockCommunityPosts.filter((p) => p.placeId === place.id);
 
   return (
     <div className="mx-auto max-w-2xl pb-16">
@@ -122,10 +122,14 @@ export default function PlaceDetailPage() {
             <h2 className="text-sm font-semibold text-warm-taupe">Community Reviews</h2>
             <div className="mt-2 space-y-2">
               {reviews.map((r) => (
-                <div key={r.id} className="rounded-xl border border-han-cream px-3.5 py-3 text-sm text-warm-taupe/80">
+                <Link
+                  key={r.id}
+                  to={`/community/${r.id}`}
+                  className="block rounded-xl border border-han-cream px-3.5 py-3 text-sm text-warm-taupe/80 hover:border-goun-rose/50"
+                >
                   <p className="font-medium text-warm-taupe">{r.authorName}</p>
                   <p className="mt-1">{r.text}</p>
-                </div>
+                </Link>
               ))}
             </div>
           </section>

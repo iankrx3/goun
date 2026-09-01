@@ -125,6 +125,7 @@ export interface CreatorPick {
 
 export interface CommunityPost {
   id: string;
+  authorId?: string;
   authorName: string;
   authorAvatarUrl: string;
   placeId?: string;
@@ -134,6 +135,20 @@ export interface CommunityPost {
   text: string;
   photos?: string[];
   rating?: number;
+  createdAt: string;
+  likeCount: number;
+  commentCount: number;
+  /** Transient, computed per-viewer at fetch time — not a stored column. */
+  likedByMe?: boolean;
+}
+
+export interface PostComment {
+  id: string;
+  postId: string;
+  authorId?: string;
+  authorName: string;
+  authorAvatarUrl: string;
+  text: string;
   createdAt: string;
 }
 

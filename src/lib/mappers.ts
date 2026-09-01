@@ -1,5 +1,5 @@
 import type { User } from '@supabase/supabase-js';
-import { Creator, Place, UserSession } from '../types';
+import { CommunityPost, Creator, Place, PostComment, UserSession } from '../types';
 
 export function mapPlace(row: any): Place {
   return {
@@ -42,6 +42,42 @@ export function mapCreator(row: any, picksCount?: number): Creator {
     website_url: row.website_url ?? undefined,
     picks_count: picksCount ?? row.picks_count ?? 0,
     created_at: row.created_at,
+  };
+}
+
+export function mapCommunityPost(
+  row: any,
+  counts?: { likeCount?: number; commentCount?: number },
+  likedByMe?: boolean
+): CommunityPost {
+  return {
+    id: row.id,
+    authorId: row.author_id ?? undefined,
+    authorName: row.author_name,
+    authorAvatarUrl: row.author_avatar_url || '',
+    placeId: row.place_id ?? undefined,
+    placeName: row.place_name ?? undefined,
+    treatmentName: row.treatment_name ?? undefined,
+    category: row.category,
+    text: row.text,
+    photos: row.photos || undefined,
+    rating: row.rating != null ? Number(row.rating) : undefined,
+    createdAt: row.created_at,
+    likeCount: counts?.likeCount ?? row.post_likes?.[0]?.count ?? 0,
+    commentCount: counts?.commentCount ?? row.post_comments?.[0]?.count ?? 0,
+    likedByMe,
+  };
+}
+
+export function mapPostComment(row: any): PostComment {
+  return {
+    id: row.id,
+    postId: row.post_id,
+    authorId: row.author_id ?? undefined,
+    authorName: row.author_name,
+    authorAvatarUrl: row.author_avatar_url || '',
+    text: row.text,
+    createdAt: row.created_at,
   };
 }
 

@@ -8,6 +8,7 @@ import MapPage from './pages/MapPage';
 import CommunityPage from './pages/CommunityPage';
 import PlaceDetailPage from './pages/PlaceDetailPage';
 import TreatmentDetailPage from './pages/TreatmentDetailPage';
+import PostDetailPage from './pages/PostDetailPage';
 import type { AuthReturnTab } from './services/auth';
 
 export default function App() {
@@ -40,7 +41,14 @@ export default function App() {
       <Routes>
         <Route path="/" element={<ExplorePage />} />
         <Route path="/map" element={<MapPage />} />
-        <Route path="/community" element={<CommunityPage />} />
+        <Route
+          path="/community"
+          element={<CommunityPage session={session} onSignIn={() => setIsAuthOpen(true)} />}
+        />
+        <Route
+          path="/community/:id"
+          element={<PostDetailPage session={session} onSignIn={() => setIsAuthOpen(true)} />}
+        />
         <Route path="/place/:id" element={<PlaceDetailPage />} />
         <Route path="/treatment/:id" element={<TreatmentDetailPage />} />
       </Routes>
