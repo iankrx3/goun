@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Bookmark, ChevronLeft, Star } from 'lucide-react';
+import { Bookmark, ChevronLeft, Navigation, Star } from 'lucide-react';
 import type { Place, Treatment } from '../types';
 import { fetchPlaceById, fetchTreatments } from '../services/places';
 import { mockCommunityPosts } from '../data/mock';
 import { useSavedPlaces } from '../hooks/useSavedPlaces';
 import { MedicalTourismSection, NearbyWellnessSection } from '../components/badges/KtoBadges';
+import { GroundedInfo } from '../components/GroundedInfo';
+import { getDirectionsLinks } from '../lib/directions';
 
 export default function PlaceDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -66,6 +68,20 @@ export default function PlaceDetailPage() {
           <span>{place.language.join(', ')}</span>
         </div>
 
+        <div className="flex flex-wrap gap-2">
+          {getDirectionsLinks(place).map((link) => (
+            <a
+              key={link.provider}
+              href={link.url}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1.5 rounded-full border border-han-cream px-3.5 py-1.5 text-xs font-semibold text-warm-taupe hover:border-goun-rose/50"
+            >
+              <Navigation className="h-3.5 w-3.5" /> {link.label}
+            </a>
+          ))}
+        </div>
+
         {place.whyPeopleLikeIt && place.whyPeopleLikeIt.length > 0 && (
           <section>
             <h2 className="text-sm font-semibold text-warm-taupe">Why people like it</h2>
@@ -99,6 +115,7 @@ export default function PlaceDetailPage() {
 
         <NearbyWellnessSection spots={place.nearbyWellness} />
         <MedicalTourismSection match={place.medicalTourismMatch} />
+        <GroundedInfo place={place} />
 
         {reviews.length > 0 && (
           <section>

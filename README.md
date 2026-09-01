@@ -34,10 +34,12 @@ proxy injects them so they never reach the browser):
 ```
 KTO_SERVICE_KEY=          # data.go.kr, service MdclTursmService (의료관광정보)
 GOOGLE_PLACES_API_KEY=    # Google Cloud Places API (New)
+GEMINI_API_KEY=           # Google AI Studio / Gemini API — optional, powers "Get latest info"
 ```
 
 - KTO key: [한국관광공사_의료관광정보](https://www.data.go.kr/data/15143913/openapi.do) → 활용신청. Use the Decoding or Encoding key; the proxy normalises either.
 - Google key: enable **Places API (New)** on a Cloud project. Restrict it to `localhost` HTTP referrers for local work.
+- Gemini key: from [Google AI Studio](https://aistudio.google.com/apikey). Place detail keeps Google Places + KTO as its data source; Gemini is only called on demand (the "Get latest info" button, `src/components/GroundedInfo.tsx`) with the Google Search grounding tool enabled, to surface things Places/KTO don't carry (hours changes, closures, recent notes). Without this key the button is hidden — fail-silent, like the KTO badges.
 
 `src/services/discovery.ts` maps each beauty category to Google Place types and,
 for `skin` / `face`, overlays KTO-certified medical-tourism orgs (badge +
@@ -60,7 +62,10 @@ quota on data.go.kr is 1,000 calls/day — results are cached for 10 minutes.
   Google Places API (New) + KTO `MdclTursmService`. Vite proxy in
   `plugins/goun-api-proxy.ts` hides the keys and avoids browser CORS.
 - **Place / Treatment detail** — Nearby Wellness and Medical Info KTO badges
-  (§7.2/§7.3), fail-silent when their data is absent.
+  (§7.2/§7.3), fail-silent when their data is absent. Get-directions links to
+  Google/Naver/Kakao Maps (`src/lib/directions.ts`), and an opt-in "Get latest
+  info" lookup backed by Gemini + Google Search grounding
+  (`src/components/GroundedInfo.tsx`) for anything Places/KTO don't cover.
 - **Community** — read-only feed (Post/Like/Comment are "MVP 이후" per §5).
 - **My Map** (`src/hooks/useSavedPlaces.ts`) — save/unsave, stored in
   `localStorage` for now (no `saved_places` table yet).

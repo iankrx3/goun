@@ -13,6 +13,7 @@ Vite + React SPA. 서버는 Vite 개발/프리뷰 프록시뿐이고, 나머지 
        │
   data.go.kr MdclTursmService (KTO 의료관광)
   places.googleapis.com      (Google Places API New)
+  generativelanguage.googleapis.com (optional) Gemini + Google Search grounding
   (optional) Supabase Auth
 ```
 
@@ -71,14 +72,15 @@ Vite + React SPA. 서버는 Vite 개발/프리뷰 프록시뿐이고, 나머지 
 
 `plugins/goun-api-proxy.ts` — `vite.config.ts`의 `configureServer` / `configurePreviewServer`.
 
-키는 `KTO_SERVICE_KEY`, `GOOGLE_PLACES_API_KEY` ( **`VITE_` 없음** ). 브라우저에 안 나간다.
+키는 `KTO_SERVICE_KEY`, `GOOGLE_PLACES_API_KEY`, `GEMINI_API_KEY` ( **`VITE_` 없음** ). 브라우저에 안 나간다.
 
 | 프론트 | 업스트림 |
 |---|---|
-| `GET /api/health` | 키 장착 여부 `{ kto, google }` |
+| `GET /api/health` | 키 장착 여부 `{ kto, google, gemini }` |
 | `GET /api/kto/:op` | `https://apis.data.go.kr/B551011/MdclTursmService/:op` |
 | `POST /api/places/search` | Places `searchNearby` / `searchText` |
 | `GET /api/places/photo` | 사진 URI로 302. 이미지 URL에 Google 키 없음 |
+| `POST /api/gemini/ground` | Gemini `generateContent` + `google_search` 툴 (grounding) |
 
 키 없으면 `503 { error: 'not_configured' }`. 정적 호스팅에는 이 프록시가 없다.
 
@@ -157,7 +159,9 @@ LLM은 없다. `match.ts`가 투명한 클라이언트 스코러다.
 **장소 상세** (`PlaceDetailPage.tsx`)
 
 - 사진, 별점, Why people like it, 시술 목록
+- 경로찾기 링크 (Google/Naver/Kakao Maps, `lib/directions.ts`) — 좌표 + `googlePlaceId` 기반, 새 탭
 - `NearbyWellnessSection` · `MedicalTourismSection` (`components/badges/KtoBadges.tsx`) — 데이터 없으면 안 그림 (fail-silent)
+- `GroundedInfo` (`components/GroundedInfo.tsx`) — "Get latest info" 버튼. 클릭 시에만 `services/gemini.ts` → `/api/gemini/ground` 호출, Google Search grounding으로 KTO/Places에 없는 최신 정보(영업시간 변경, 휴업 등) 요약 + 출처 링크. `GEMINI_API_KEY` 없으면 버튼 자체가 안 보임 (fail-silent)
 - Save to My Map, Creatrip(또는 Google website)
 
 **시술 상세** (`TreatmentDetailPage.tsx`) — 가격대, 다운타임, 강도, 연결된 장소.
@@ -209,6 +213,7 @@ LLM은 없다. `match.ts`가 투명한 클라이언트 스코러다.
 | `VITE_MAPTILER_API_KEY` | 브라우저 | 지도 타일 |
 | `KTO_SERVICE_KEY` | Vite 서버 | 의료관광 Open API |
 | `GOOGLE_PLACES_API_KEY` | Vite 서버 | Places API (New) |
+| `GEMINI_API_KEY` | Vite 서버 | Gemini + Google Search grounding (장소 상세 "Get latest info", 선택) |
 
 전부 비어 있으면: 데모 로그인 + mock 장소 + Carto 지도.
 

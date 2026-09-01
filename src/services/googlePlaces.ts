@@ -117,20 +117,20 @@ export async function searchText(opts: {
   });
 }
 
-let healthCache: { kto: boolean; google: boolean } | null = null;
+let healthCache: { kto: boolean; google: boolean; gemini: boolean } | null = null;
 
-export async function getApiHealth(): Promise<{ kto: boolean; google: boolean }> {
+export async function getApiHealth(): Promise<{ kto: boolean; google: boolean; gemini: boolean }> {
   if (healthCache) return healthCache;
   try {
     const response = await fetch('/api/health');
     if (!response.ok) {
-      healthCache = { kto: false, google: false };
+      healthCache = { kto: false, google: false, gemini: false };
       return healthCache;
     }
-    healthCache = (await response.json()) as { kto: boolean; google: boolean };
+    healthCache = (await response.json()) as { kto: boolean; google: boolean; gemini: boolean };
     return healthCache;
   } catch {
-    healthCache = { kto: false, google: false };
+    healthCache = { kto: false, google: false, gemini: false };
     return healthCache;
   }
 }

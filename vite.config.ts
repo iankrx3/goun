@@ -10,6 +10,7 @@ export default defineConfig(({ mode }) => {
       gounApiProxy({
         ktoKey: env.KTO_SERVICE_KEY,
         googleKey: env.GOOGLE_PLACES_API_KEY,
+        geminiKey: env.GEMINI_API_KEY,
       }),
     ],
   };

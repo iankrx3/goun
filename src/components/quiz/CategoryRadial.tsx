@@ -16,7 +16,7 @@ export const CategoryRadial: React.FC<CategoryRadialProps> = ({ onSelect }) => {
   return (
     <div className="relative mx-auto flex h-[340px] w-[340px] max-w-full items-center justify-center">
       <div className="flex h-24 w-24 items-center justify-center rounded-full bg-goun-rose text-center text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-goun-rose/30">
-        SNIFF
+        Explore
       </div>
 
       {CATEGORIES.map((category, i) => {

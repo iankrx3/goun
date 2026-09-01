@@ -3,6 +3,8 @@ import type { Plugin, ViteDevServer } from 'vite';
 
 const KTO_BASE = 'https://apis.data.go.kr/B551011/MdclTursmService';
 const PLACES_BASE = 'https://places.googleapis.com/v1';
+const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta';
+const GEMINI_MODEL = 'gemini-2.5-flash';
 const KTO_OPS = new Set([
   'searchKeyword',
   'locationBasedList',
@@ -32,6 +34,7 @@ const PLACES_FIELD_MASK = [
 export interface GounApiProxyOptions {
   ktoKey?: string;
   googleKey?: string;
+  geminiKey?: string;
 }
 
 function json(res: ServerResponse, status: number, body: unknown) {
@@ -136,6 +139,34 @@ async function handlePlacesPhoto(url: URL, res: ServerResponse, googleKey: strin
   res.end();
 }
 
+async function handleGeminiGround(req: IncomingMessage, res: ServerResponse, geminiKey: string) {
+  const raw = await readBody(req);
+  let payload: { prompt?: string };
+  try {
+    payload = JSON.parse(raw || '{}');
+  } catch {
+    json(res, 400, { error: 'Invalid JSON body' });
+    return;
+  }
+  if (!payload.prompt) {
+    json(res, 400, { error: 'Missing prompt' });
+    return;
+  }
+
+  const response = await fetch(`${GEMINI_BASE}/models/${GEMINI_MODEL}:generateContent?key=${geminiKey}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: payload.prompt }] }],
+      tools: [{ google_search: {} }],
+    }),
+  });
+  const text = await response.text();
+  res.statusCode = response.status;
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.end(text);
+}
+
 function attach(server: ViteDevServer, options: GounApiProxyOptions) {
   server.middlewares.use(async (req, res, next) => {
     const rawUrl = req.url || '';
@@ -151,6 +182,7 @@ function attach(server: ViteDevServer, options: GounApiProxyOptions) {
         json(res, 200, {
           kto: Boolean(options.ktoKey),
           google: Boolean(options.googleKey),
+          gemini: Boolean(options.geminiKey),
         });
         return;
       }
@@ -179,6 +211,15 @@ function attach(server: ViteDevServer, options: GounApiProxyOptions) {
           return;
         }
         await handlePlacesPhoto(url, res, options.googleKey);
+        return;
+      }
+
+      if (url.pathname === '/api/gemini/ground' && req.method === 'POST') {
+        if (!options.geminiKey) {
+          json(res, 503, { error: 'not_configured', service: 'gemini' });
+          return;
+        }
+        await handleGeminiGround(req, res, options.geminiKey);
         return;
       }
 
