@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import { Link, useNavigate } from 'react-router-dom';
-import { Locate, Loader2, Search, X, ChevronRight, Plus, Minus } from 'lucide-react';
+import { Locate, Loader2, Search, X, ChevronRight, ChevronDown, Plus, Minus } from 'lucide-react';
 import type { BeautyCategory, CreatorPick, Place } from '../types';
 import { categoryMeta } from '../data/mock';
 import { ENABLED_MAP_CATEGORIES } from '../data/mapCategories';
@@ -50,6 +50,7 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
   const [filterMode, setFilterMode] = useState<FilterMode>('category');
   const [selectedCategory, setSelectedCategory] = useState<'all' | BeautyCategory>('all');
   const [selectedPick, setSelectedPick] = useState<PickFilter>('all');
+  const [isCreatorPicksExpanded, setIsCreatorPicksExpanded] = useState(true);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Place[]>([]);
@@ -421,36 +422,47 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
             </div>
           </div>
         )}
-      </div>
 
-      {creatorPicks.length > 0 && !(isSearchOpen && searchQuery) && (
-        <div className="pointer-events-none absolute top-[132px] left-3 right-3 z-10 mx-auto max-w-2xl">
-          <div className="pointer-events-auto rounded-2xl bg-white/90 p-3 shadow-lg backdrop-blur-md border border-white/60">
-            <p className="mb-2 px-1 text-[11px] font-bold uppercase tracking-wider text-miyeon-main/60">
-              Curated by Creators
-            </p>
-            <div className="flex items-center gap-3 overflow-x-auto no-scrollbar py-1">
-              {creatorPicks.map((pick) => (
-                <Link
-                  key={pick.id}
-                  to={`/curator/${pick.creator.id}`}
-                  className="group flex shrink-0 flex-col items-center gap-1.5"
-                >
-                  <img
-                    src={pick.creator.avatar_url}
-                    alt={pick.creator.display_name}
-                    referrerPolicy="no-referrer"
-                    className="h-11 w-11 rounded-full object-cover ring-2 ring-miyeon-sub1/30 group-hover:ring-miyeon-sub1"
-                  />
-                  <span className="max-w-[70px] truncate text-[11px] font-medium text-miyeon-main">
-                    @{pick.creator.username}
-                  </span>
-                </Link>
-              ))}
-            </div>
+        {creatorPicks.length > 0 && !(isSearchOpen && searchQuery) && (
+          <div className="pointer-events-auto rounded-2xl bg-white/90 shadow-lg backdrop-blur-md border border-white/60">
+            <button
+              onClick={() => setIsCreatorPicksExpanded((prev) => !prev)}
+              aria-expanded={isCreatorPicksExpanded}
+              className="flex w-full items-center justify-between gap-2 px-3.5 py-2.5"
+            >
+              <p className="text-[11px] font-bold uppercase tracking-wider text-miyeon-main/60">
+                Curated by Creators
+              </p>
+              <ChevronDown
+                className={`h-3.5 w-3.5 shrink-0 text-miyeon-main/50 transition-transform ${
+                  isCreatorPicksExpanded ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+            {isCreatorPicksExpanded && (
+              <div className="flex items-center gap-3 overflow-x-auto no-scrollbar px-3.5 pb-3 pt-1">
+                {creatorPicks.map((pick) => (
+                  <Link
+                    key={pick.id}
+                    to={`/curator/${pick.creator.id}`}
+                    className="group flex shrink-0 flex-col items-center gap-1.5"
+                  >
+                    <img
+                      src={pick.creator.avatar_url}
+                      alt={pick.creator.display_name}
+                      referrerPolicy="no-referrer"
+                      className="h-11 w-11 rounded-full object-cover ring-2 ring-miyeon-sub1/30 group-hover:ring-miyeon-sub1"
+                    />
+                    <span className="max-w-[70px] truncate text-[11px] font-medium text-miyeon-main">
+                      @{pick.creator.username}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

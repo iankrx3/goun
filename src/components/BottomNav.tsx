@@ -11,7 +11,7 @@ const tabs = [
 // Mobile-only bottom tab bar — thumb-reachable primary navigation.
 // NavHeader keeps the top nav for desktop (sm:flex / hidden below sm).
 export const BottomNav: React.FC = () => (
-  <nav className="fixed bottom-0 left-0 right-0 z-40 flex h-12 items-stretch border-t border-miyeon-neutral bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md sm:hidden">
+  <nav className="fixed bottom-0 left-0 right-0 z-40 flex h-14 items-stretch border-t border-miyeon-neutral bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md sm:hidden">
     {tabs.map(({ to, label, icon: Icon }) => (
       <NavLink
         key={to}
@@ -23,7 +23,7 @@ export const BottomNav: React.FC = () => (
           }`
         }
       >
-        <Icon className="h-4 w-4" />
+        <Icon className="h-6 w-6" />
         {label}
       </NavLink>
     ))}
