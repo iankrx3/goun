@@ -22,6 +22,10 @@
   --font-eng-main: 'Satoshi', 'Pretendard', sans-serif;
   --font-eng-sub: 'Satoshi', 'Pretendard', sans-serif;
   --font-kr: 'Pretendard', sans-serif;
+
+  /* Mobile bottom tab bar height (BottomNav), incl. device safe area — used
+     to keep floating map controls from being hidden underneath it. */
+  --bottom-nav-h: calc(4rem + env(safe-area-inset-bottom));
 }
 
 html,

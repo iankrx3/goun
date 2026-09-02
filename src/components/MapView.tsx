@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Locate, Loader2, Search, X, ChevronRight, Plus, Minus } from 'lucide-react';
 import type { BeautyCategory, CreatorPick, Place } from '../types';
 import { categoryMeta } from '../data/mock';
@@ -35,6 +35,7 @@ const PICK_FILTERS: { id: PickFilter; label: string }[] = [
 ];
 
 export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
+  const navigate = useNavigate();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
@@ -147,17 +148,23 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
       const marker = L.marker([place.latitude, place.longitude], { icon: customIcon });
       marker.on('click', () => onSelectPlace(place));
       marker.bindPopup(`
-        <div style="padding:6px;font-family:inherit;">
+        <div class="place-popup-content" style="padding:6px;font-family:inherit;cursor:pointer;">
           <img src="${place.photoUrl}" style="width:100%;height:90px;object-fit:cover;border-radius:8px;margin-bottom:6px;" />
           <div style="font-size:13px;font-weight:bold;color:#5A514D;">${place.name}</div>
           <div style="font-size:11px;color:#D49A9A;font-weight:600;margin-top:2px;">★ ${place.rating} · ${place.area}</div>
         </div>
       `);
+      // The Leaflet popup is a raw HTML string (not React), so wire the
+      // navigate-to-place click directly to its DOM node each time it opens.
+      marker.on('popupopen', () => {
+        const el = marker.getPopup()?.getElement()?.querySelector<HTMLElement>('.place-popup-content');
+        if (el) el.onclick = () => navigate(`/place/${place.id}`);
+      });
 
       layer.addLayer(marker);
       markerMapRef.current.set(place.id, marker);
     });
-  }, [places, filterMode, selectedCategory, selectedPick, getFilteredPlaces, onSelectPlace]);
+  }, [places, filterMode, selectedCategory, selectedPick, getFilteredPlaces, onSelectPlace, navigate]);
 
   // KTO Wellness pins — tone-down Warm Taupe marker, visually distinct from Miyeon Rose beauty pins (§15.3)
   useEffect(() => {
@@ -314,12 +321,12 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
       )}
 
       {locationError && (
-        <div className="absolute bottom-[84px] left-1/2 z-30 -translate-x-1/2 whitespace-nowrap rounded-full bg-miyeon-main/90 px-4 py-2 text-xs font-medium text-white shadow-xl backdrop-blur-md sm:bottom-5">
+        <div className="absolute bottom-[calc(var(--bottom-nav-h)+20px)] left-1/2 z-30 -translate-x-1/2 whitespace-nowrap rounded-full bg-miyeon-main/90 px-4 py-2 text-xs font-medium text-white shadow-xl backdrop-blur-md sm:bottom-5">
           ⚠️ {locationError}
         </div>
       )}
 
-      <div className="absolute right-3 bottom-[84px] z-10 flex flex-col gap-2 sm:bottom-5">
+      <div className="absolute right-3 bottom-[calc(var(--bottom-nav-h)+20px)] z-10 flex flex-col gap-2 sm:bottom-5">
         <MapButton onClick={() => mapInstanceRef.current?.zoomIn()} label="Zoom In">
           <Plus className="h-4 w-4" />
         </MapButton>
