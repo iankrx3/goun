@@ -26,6 +26,32 @@
   /* Mobile bottom tab bar height (BottomNav), incl. device safe area — used
      to keep floating map controls from being hidden underneath it. */
   --bottom-nav-h: calc(3rem + env(safe-area-inset-bottom));
+
+  /* Body-copy type scale (buttons, inputs, card text, headings). Floors at
+     16px so mobile Safari never auto-zooms on focus/read, then steps up on
+     desktop. Small decorative badges/captions use arbitrary text-[Npx] and
+     are intentionally untouched by this scale. */
+  --fs-xs: 1rem; /* 16px */
+  --fs-sm: 1rem; /* 16px */
+  --fs-base: 1rem; /* 16px */
+  --fs-lg: 1.125rem; /* 18px */
+  --fs-xl: 1.25rem; /* 20px */
+  --fs-2xl: 1.5rem; /* 24px */
+  --fs-3xl: 1.875rem; /* 30px */
+  --fs-4xl: 2.25rem; /* 36px */
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --fs-xs: 1.0625rem; /* 17px */
+    --fs-sm: 1.125rem; /* 18px */
+    --fs-base: 1.125rem; /* 18px */
+    --fs-lg: 1.25rem; /* 20px */
+    --fs-xl: 1.4375rem; /* 23px */
+    --fs-2xl: 1.6875rem; /* 27px */
+    --fs-3xl: 2.125rem; /* 34px */
+    --fs-4xl: 2.5625rem; /* 41px */
+  }
 }
 
 html,
