@@ -29,27 +29,27 @@ export default function PlaceDetailPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  if (loading) return <div className="px-4 py-10 text-sm text-warm-taupe/60">Loading…</div>;
-  if (!place) return <div className="px-4 py-10 text-sm text-warm-taupe/60">Place not found.</div>;
+  if (loading) return <div className="px-4 py-10 text-sm text-miyeon-main/60">Loading…</div>;
+  if (!place) return <div className="px-4 py-10 text-sm text-miyeon-main/60">Place not found.</div>;
 
   return (
     <div className="mx-auto max-w-2xl pb-16">
       <img src={place.photoUrl} alt={place.name} className="h-64 w-full object-cover sm:h-80" />
 
       <div className="space-y-6 px-4 py-6">
-        <Link to="/map" className="flex items-center gap-1 text-xs font-semibold text-warm-taupe/60">
+        <Link to="/map" className="flex items-center gap-1 text-xs font-semibold text-miyeon-main/60">
           <ChevronLeft className="h-3.5 w-3.5" /> Back to map
         </Link>
 
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h1 className="font-display text-3xl text-warm-taupe">{place.name}</h1>
-            <p className="mt-1 text-xs text-warm-taupe/60">{place.address}</p>
+            <h1 className="font-display text-3xl text-miyeon-main">{place.name}</h1>
+            <p className="mt-1 text-xs text-miyeon-main/60">{place.address}</p>
           </div>
           <button
             onClick={() => toggleSave(place.id)}
             className={`flex shrink-0 items-center gap-1.5 rounded-full border px-4 py-2 text-xs font-bold ${
-              isSaved(place.id) ? 'border-goun-rose bg-goun-rose text-white' : 'border-han-cream text-warm-taupe'
+              isSaved(place.id) ? 'border-miyeon-sub1 bg-miyeon-sub1 text-white' : 'border-miyeon-neutral text-miyeon-main'
             }`}
           >
             <Bookmark className="h-3.5 w-3.5" fill={isSaved(place.id) ? 'currentColor' : 'none'} />
@@ -57,11 +57,11 @@ export default function PlaceDetailPage() {
           </button>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 text-sm text-warm-taupe">
+        <div className="flex flex-wrap items-center gap-2 text-sm text-miyeon-main">
           <span className="flex items-center gap-1 font-semibold">
-            <Star className="h-4 w-4 fill-goun-rose text-goun-rose" /> {place.rating}
+            <Star className="h-4 w-4 fill-miyeon-sub1 text-miyeon-sub1" /> {place.rating}
           </span>
-          <span className="text-warm-taupe/50">({place.reviewCount} reviews)</span>
+          <span className="text-miyeon-main/50">({place.reviewCount} reviews)</span>
           <span>·</span>
           <span>{place.priceRange}</span>
           <span>·</span>
@@ -75,7 +75,7 @@ export default function PlaceDetailPage() {
               href={link.url}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-1.5 rounded-full border border-han-cream px-3.5 py-1.5 text-xs font-semibold text-warm-taupe hover:border-goun-rose/50"
+              className="flex items-center gap-1.5 rounded-full border border-miyeon-neutral px-3.5 py-1.5 text-xs font-semibold text-miyeon-main hover:border-miyeon-sub1/50"
             >
               <Navigation className="h-3.5 w-3.5" /> {link.label}
             </a>
@@ -84,8 +84,8 @@ export default function PlaceDetailPage() {
 
         {place.whyPeopleLikeIt && place.whyPeopleLikeIt.length > 0 && (
           <section>
-            <h2 className="text-sm font-semibold text-warm-taupe">Why people like it</h2>
-            <ul className="mt-2 space-y-1 text-sm text-warm-taupe/80">
+            <h2 className="text-sm font-semibold text-miyeon-main">Why people like it</h2>
+            <ul className="mt-2 space-y-1 text-sm text-miyeon-main/80">
               {place.whyPeopleLikeIt.map((reason) => (
                 <li key={reason}>· {reason}</li>
               ))}
@@ -95,16 +95,16 @@ export default function PlaceDetailPage() {
 
         {treatments.length > 0 && (
           <section>
-            <h2 className="text-sm font-semibold text-warm-taupe">Treatments</h2>
+            <h2 className="text-sm font-semibold text-miyeon-main">Treatments</h2>
             <div className="mt-2 space-y-2">
               {treatments.map((t) => (
                 <Link
                   key={t.id}
                   to={`/treatment/${t.id}`}
-                  className="flex items-center justify-between rounded-xl border border-han-cream px-3.5 py-3 text-sm"
+                  className="flex items-center justify-between rounded-xl border border-miyeon-neutral px-3.5 py-3 text-sm"
                 >
-                  <span className="font-medium text-warm-taupe">{t.name}</span>
-                  <span className="text-xs text-warm-taupe/60">
+                  <span className="font-medium text-miyeon-main">{t.name}</span>
+                  <span className="text-xs text-miyeon-main/60">
                     ${t.price.min}–${t.price.max}
                   </span>
                 </Link>
@@ -119,15 +119,15 @@ export default function PlaceDetailPage() {
 
         {reviews.length > 0 && (
           <section>
-            <h2 className="text-sm font-semibold text-warm-taupe">Community Reviews</h2>
+            <h2 className="text-sm font-semibold text-miyeon-main">Community Reviews</h2>
             <div className="mt-2 space-y-2">
               {reviews.map((r) => (
                 <Link
                   key={r.id}
                   to={`/community/${r.id}`}
-                  className="block rounded-xl border border-han-cream px-3.5 py-3 text-sm text-warm-taupe/80 hover:border-goun-rose/50"
+                  className="block rounded-xl border border-miyeon-neutral px-3.5 py-3 text-sm text-miyeon-main/80 hover:border-miyeon-sub1/50"
                 >
-                  <p className="font-medium text-warm-taupe">{r.authorName}</p>
+                  <p className="font-medium text-miyeon-main">{r.authorName}</p>
                   <p className="mt-1">{r.text}</p>
                 </Link>
               ))}
@@ -139,7 +139,7 @@ export default function PlaceDetailPage() {
           href={place.bookingUrl || 'https://www.creatrip.com/en'}
           target="_blank"
           rel="noreferrer"
-          className="block rounded-full bg-goun-rose py-3.5 text-center text-sm font-bold text-white shadow-sm shadow-goun-rose/30"
+          className="block rounded-full bg-miyeon-sub1 py-3.5 text-center text-sm font-bold text-white shadow-sm shadow-miyeon-sub1/30"
         >
           BOOK WITH CREATRIP →
         </a>

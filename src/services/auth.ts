@@ -6,15 +6,15 @@ import { fetchCreatorByUserId } from './places';
 
 export { isSupabaseConfigured };
 
-const RETURN_TAB_KEY = 'goun_auth_return_tab';
-const MOCK_SESSION_KEY = 'goun_mock_session';
+const RETURN_TAB_KEY = 'miyeon_auth_return_tab';
+const MOCK_SESSION_KEY = 'miyeon_mock_session';
 
 export const DEMO_USER: NonNullable<UserSession['user']> = {
   id: 'mock-user',
   google_id: 'mock-google',
-  email: 'demo@goun.app',
-  name: 'Goun Demo',
-  avatar_url: 'https://ui-avatars.com/api/?name=Goun+Demo&background=B98278&color=fff',
+  email: 'demo@miyeon.app',
+  name: 'Miyeon Demo',
+  avatar_url: 'https://ui-avatars.com/api/?name=Miyeon+Demo&background=D49A9A&color=fff',
 };
 
 export type AuthReturnTab = 'explore' | 'map' | 'community' | string;

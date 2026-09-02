@@ -1,6 +1,6 @@
-import type { BeautyCategory, Budget, Downtime, ResultTiming } from '../types';
+import type { BeautyCategory, Budget, Downtime, TripLength } from '../types';
 
-// SNIFF quiz content — Goun_PRD_v2_KTO_Design.md §2-2 (WHAT), §2-3 (VIBE), §2-4 (Constraints)
+// SNIFF quiz content — MIYEON Core UX §02-3 (WHAT), §02-4 (VIBE), §02-5 (Constraints)
 
 export const whatOptions: Record<BeautyCategory, string[]> = {
   skin: ['Pores', 'Acne', 'Pigmentation', 'Dryness', 'Fine Lines', 'Dullness', 'Uneven Skin', 'Glow'],
@@ -15,16 +15,17 @@ export interface VibePair {
   b: string;
 }
 
+// Order matters — §02-4: Subtle/Dramatic (result) → Fast/Long-term (timing) → Needles/No-needles (method).
 export const vibePairs: Record<BeautyCategory, VibePair[]> = {
   skin: [
+    { a: '🤫 Keep it Subtle', b: '🔥 I Want a Clear Difference' },
     { a: '⚡ Fast Results', b: '🌱 Long-Term Skin Health' },
-    { a: '🤫 Keep It Subtle', b: '🔥 Dramatic Change' },
-    { a: '🌿 Naturally Better', b: '✨ More Refined' },
+    { a: '💉 Needles Are Fine', b: '🚫 Nothing That Breaks the Skin' },
   ],
   face: [
+    { a: '🤫 Keep it Subtle', b: '🔥 I Want a Clear Difference' },
     { a: '⚡ Fast Results', b: '🌱 Long-Term Improvement' },
-    { a: '🤫 Keep It Subtle', b: '🔥 Dramatic Change' },
-    { a: '🌿 Naturally Defined', b: '✨ More Sculpted' },
+    { a: '💉 Injectables Are Fine', b: '🚫 No Needles — Devices Only' },
   ],
   hair: [
     { a: '🤍 Natural & Effortless', b: '🇰🇷 K-Pop/K-Idol' },
@@ -43,18 +44,18 @@ export const vibePairs: Record<BeautyCategory, VibePair[]> = {
   ],
 };
 
-export const downtimeOptions: { id: Downtime; label: string }[] = [
-  { id: 'none', label: 'None' },
+export const tripLengthOptions: { id: TripLength; label: string }[] = [
   { id: '1-3-days', label: '1–3 days' },
-  { id: '3-7-days', label: '3–7 days' },
-  { id: 'no-mind', label: "I don't mind" },
+  { id: '4-7-days', label: '4–7 days' },
+  { id: '8-14-days', label: '8–14 days' },
+  { id: 'live-here', label: 'I live here' },
 ];
 
-export const resultTimingOptions: { id: ResultTiming; label: string }[] = [
-  { id: 'asap', label: 'ASAP' },
-  { id: 'within-week', label: 'Within a week' },
-  { id: '1-2-weeks', label: '1–2 weeks' },
-  { id: 'long-term', label: 'Long-term' },
+export const downtimeOptions: { id: Downtime; label: string }[] = [
+  { id: 'none', label: 'None' },
+  { id: '1-3-days', label: 'A day or two' },
+  { id: '3-7-days', label: 'A few days' },
+  { id: 'no-mind', label: "I don't mind" },
 ];
 
 export const budgetOptions: { id: Budget; label: string }[] = [
@@ -64,11 +65,9 @@ export const budgetOptions: { id: Budget; label: string }[] = [
   { id: '500-plus', label: '$500+' },
 ];
 
-export const otherOptions = ['English Friendly', 'Near Me', 'First Time', 'No Preference'];
-
 export const aiTransitionMessages = [
-  'Picking your best matches...',
-  'Understanding your goals...',
-  'Checking treatments...',
-  'Finding your best matches...',
+  'Reading your answers…',
+  'Checking English consultation…',
+  "Filtering what's actually bookable…",
+  'Found 3.',
 ];

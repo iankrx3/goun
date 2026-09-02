@@ -43,12 +43,12 @@ export default function PostDetailPage({ session, onSignIn }: PostDetailPageProp
     navigate('/community');
   };
 
-  if (loading) return <div className="px-4 py-10 text-sm text-warm-taupe/60">Loading…</div>;
-  if (!post) return <div className="px-4 py-10 text-sm text-warm-taupe/60">Post not found.</div>;
+  if (loading) return <div className="px-4 py-10 text-sm text-miyeon-main/60">Loading…</div>;
+  if (!post) return <div className="px-4 py-10 text-sm text-miyeon-main/60">Post not found.</div>;
 
   return (
     <div className="mx-auto max-w-2xl space-y-4 px-4 py-8">
-      <Link to="/community" className="flex items-center gap-1 text-xs font-semibold text-warm-taupe/60">
+      <Link to="/community" className="flex items-center gap-1 text-xs font-semibold text-miyeon-main/60">
         <ChevronLeft className="h-3.5 w-3.5" /> Back to community
       </Link>
 

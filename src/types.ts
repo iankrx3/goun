@@ -1,19 +1,20 @@
-// Data model per Goun_PRD_v2_KTO_Design.md §8 (DATA & AI SYSTEM) and §4 (PLACE)
+// Data model per the MIYEON Core UX spec §8 (DATA & AI SYSTEM) and §4 (PLACE)
 
 export type BeautyCategory = 'skin' | 'face' | 'hair' | 'nails' | 'makeup';
 
 export type Downtime = 'none' | '1-3-days' | '3-7-days' | 'no-mind';
 export type ResultTiming = 'asap' | 'within-week' | '1-2-weeks' | 'long-term';
 export type Budget = 'under-100' | '100-300' | '300-500' | '500-plus';
+export type TripLength = '1-3-days' | '4-7-days' | '8-14-days' | 'live-here';
 
 export interface QuizAnswers {
   category: BeautyCategory | null;
   concerns: string[]; // Step 1 — WHAT (multi-select)
-  vibes: string[]; // Step 2 — VIBE picks, one per pair
+  vibes: string[]; // Step 2 — VIBE picks, one per pair (Subtle/Dramatic, Fast/Long-term, Needles/No-needles)
   downtime: Downtime | null;
-  resultTiming: ResultTiming | null;
+  resultTiming: ResultTiming | null; // derived from the Fast/Long-term vibe pick, not asked separately
   budget: Budget | null;
-  other: string[]; // English Friendly / Near Me / First Time / No Preference
+  tripLength: TripLength | null;
 }
 
 export interface Treatment {
@@ -25,6 +26,7 @@ export interface Treatment {
   downtime: Downtime;
   resultTiming: ResultTiming;
   price: { min: number; max: number; currency: 'USD' };
+  durationMinutes?: number;
   treatmentType: string;
   intensity: 'low' | 'medium' | 'high';
   placeId: string;

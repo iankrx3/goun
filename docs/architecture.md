@@ -1,4 +1,4 @@
-# Goun 아키텍처별 기능 설명
+# Miyeon 아키텍처별 기능 설명
 
 Vite + React SPA. 서버는 Vite 개발/프리뷰 프록시뿐이고, 나머지 로직은 브라우저에서 돌아간다.
 
@@ -9,7 +9,7 @@ Vite + React SPA. 서버는 Vite 개발/프리뷰 프록시뿐이고, 나머지 
   services                    인증 · 장소 조회 · 매칭 · 디스커버리
   data / types                퀴즈 카피, 카테고리 맵, mock, 도메인 모델
        │  /api/*
-[Vite 프록시] plugins/goun-api-proxy.ts
+[Vite 프록시] plugins/miyeon-api-proxy.ts
        │
   data.go.kr MdclTursmService (KTO 의료관광)
   places.googleapis.com      (Google Places API New)
@@ -28,7 +28,7 @@ Vite + React SPA. 서버는 Vite 개발/프리뷰 프록시뿐이고, 나머지 
 | `src/main.tsx` | React 루트, `BrowserRouter` |
 | `src/App.tsx` | 헤더, 라우트, 로그인 모달 |
 | `src/components/NavHeader.tsx` | Explore / Map / Community 탭, Sign in·out |
-| `src/index.css`, `tailwind.config.js` | Goun Rose / Warm Taupe 토큰, 폰트 |
+| `src/index.css`, `tailwind.config.js` | Miyeon 브랜드 토큰 (Main/Sub1/Sub2/Neutral/Base), 폰트 |
 
 **기능**
 
@@ -53,8 +53,8 @@ Vite + React SPA. 서버는 Vite 개발/프리뷰 프록시뿐이고, 나머지 
 
 **Continue as demo**
 
-- 유저: `Goun Demo` / `demo@goun.app`
-- 키 `goun_mock_session`
+- 유저: `Miyeon Demo` / `demo@miyeon.app`
+- 키 `miyeon_mock_session`
 - Supabase가 없어도 동작. 새로고침 유지. Sign out 시 삭제.
 
 **Google**
@@ -70,7 +70,7 @@ Vite + React SPA. 서버는 Vite 개발/프리뷰 프록시뿐이고, 나머지 
 
 ### 3.1 API 프록시
 
-`plugins/goun-api-proxy.ts` — `vite.config.ts`의 `configureServer` / `configurePreviewServer`.
+`plugins/miyeon-api-proxy.ts` — `vite.config.ts`의 `configureServer` / `configurePreviewServer`.
 
 키는 `KTO_SERVICE_KEY`, `GOOGLE_PLACES_API_KEY`, `GEMINI_API_KEY` ( **`VITE_` 없음** ). 브라우저에 안 나간다.
 
@@ -125,16 +125,16 @@ Map · 상세 · 퀴즈가 같은 `Place.id`를 보게 카탈로그에 디스커
 
 | 레이어 | 파일 | 기능 |
 |---|---|---|
-| UI | `ExplorePage.tsx` | Home → WHAT → VIBE → Constraints → AI 전환 → Top 3 |
-| 퀴즈 카피 | `data/quiz.ts` | 카테고리별 concern, vibe 쌍, 다운타임/예산 |
-| 위젯 | `CategoryRadial`, `PairChoice`, `AITransition`, `ResultCard` | 선택 UI, 로딩, 매치 카드 |
-| 스코러 | `services/match.ts` | PRD §9 가중 합. 상위 3개 |
+| UI | `ExplorePage.tsx` | Home → Category(Treatments/Salon/Products) → Skin/Face → WHAT → VIBE → Constraints → AI 전환 → Top 3 |
+| 퀴즈 카피 | `data/quiz.ts` | 카테고리별 concern, vibe 쌍(Subtle/Dramatic·Fast/Long-term·Needles), 여행기간/다운타임/예산 |
+| 위젯 | `ModeSelect`, `CategoryRadial`, `PairChoice`, `AITransition`, `ResultCard` | 카테고리 선택, 시술 선택 UI, 로딩, 매치 카드 |
+| 스코러 | `services/match.ts` | 가중 합 (Concern/Result/Downtime/Budget/Timing/Location/Foreigner/Vibe). 상위 3개 |
 
-흐름: 카테고리로 `discoverPlaces()` → 합성 시술 점수 → 실패 시 mock 시술.
+흐름: 카테고리(Skin/Face)로 `discoverPlaces()` → 합성 시술 점수 → 실패 시 mock 시술. Treatments만 구현되어 있고 Salon/Products는 "Coming soon" 카드로만 존재한다.
 
-가중치: Concern 0.25, Result 0.15, Downtime 0.15, Budget 0.15, Timing 0.15, Location 0.10, Foreigner 0.05.
+가중치: Concern 0.25, Result 0.05, Downtime 0.15, Budget 0.15, Timing 0.15, Location 0.10, Foreigner 0.05, Vibe 0.10.
 
-`Near Me`면 퀴즈 끝에 geolocation을 origin으로 넘긴다. KTO 매치면 Result 카드에 의료관광 한 줄을 붙인다.
+English-friendly 여부는 이제 항상 체크된 것으로 간주한다 (opt-in 체크박스 제거). KTO 매치면 Result 카드에 의료관광 한 줄을 붙인다.
 
 LLM은 없다. `match.ts`가 투명한 클라이언트 스코러다.
 
@@ -147,7 +147,7 @@ LLM은 없다. `match.ts`가 투명한 클라이언트 스코러다.
 | `pages/MapPage.tsx` | 선택 장소 시트, 상세 이동, Save |
 | `components/MapView.tsx` | Leaflet, 카테고리/픽 필터, 검색, 내 위치, 핀 |
 
-- 뷰티 핀: Goun Rose. 카테고리 아이콘.
+- 뷰티 핀: Miyeon Sub1 (Dusty Rose). 카테고리 아이콘.
 - 웰니스 핀: Warm Taupe. mock `nearbyWellness`만.
 - 타일: `VITE_MAPTILER_API_KEY` 있으면 MapTiler, 없으면 Carto Voyager.
 - 데이터: `fetchPlaces()` / `fetchCreatorPicks()`.
@@ -168,7 +168,7 @@ LLM은 없다. `match.ts`가 투명한 클라이언트 스코러다.
 
 **커뮤니티** (`CommunityPage.tsx`) — `mockCommunityPosts` 읽기 전용. 글쓰기/좋아요/팔로우는 없음.
 
-**My Map** (`hooks/useSavedPlaces.ts`) — 장소 id 배열, `goun_my_map`. 서버 테이블 없음.
+**My Map** (`hooks/useSavedPlaces.ts`) — 장소 id 배열, `miyeon_my_map`. 서버 테이블 없음.
 
 ---
 

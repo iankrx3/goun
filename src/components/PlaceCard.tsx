@@ -14,24 +14,24 @@ interface PlaceCardProps {
 export const PlaceCard: React.FC<PlaceCardProps> = ({ place, saved, onSave, onView }) => {
   const meta = categoryMeta[place.category];
   return (
-    <div className="overflow-hidden rounded-2xl border border-han-cream bg-white shadow-sm">
+    <div className="overflow-hidden rounded-2xl border border-miyeon-neutral bg-white shadow-sm">
       <button onClick={() => onView?.(place)} className="block w-full text-left">
         <img src={place.photoUrl} alt={place.name} className="h-36 w-full object-cover" />
       </button>
       <div className="space-y-2 p-3.5">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-goun-rose">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-miyeon-sub1">
               {meta.icon} {meta.label} · {place.area}
             </p>
-            <h3 className="mt-0.5 text-base font-semibold text-warm-taupe">{place.name}</h3>
+            <h3 className="mt-0.5 text-base font-semibold text-miyeon-main">{place.name}</h3>
           </div>
           {onSave && (
             <button
               onClick={() => onSave(place.id)}
               aria-label="Save to My Map"
               className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-colors ${
-                saved ? 'border-goun-rose bg-goun-rose text-white' : 'border-han-cream text-warm-taupe'
+                saved ? 'border-miyeon-sub1 bg-miyeon-sub1 text-white' : 'border-miyeon-neutral text-miyeon-main'
               }`}
             >
               <Bookmark className="h-3.5 w-3.5" fill={saved ? 'currentColor' : 'none'} />
@@ -39,9 +39,9 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({ place, saved, onSave, onVi
           )}
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-warm-taupe/70">
-          <span className="flex items-center gap-0.5 font-semibold text-warm-taupe">
-            <Star className="h-3 w-3 fill-goun-rose text-goun-rose" /> {place.rating}
+        <div className="flex items-center gap-2 text-xs text-miyeon-main/70">
+          <span className="flex items-center gap-0.5 font-semibold text-miyeon-main">
+            <Star className="h-3 w-3 fill-miyeon-sub1 text-miyeon-sub1" /> {place.rating}
           </span>
           <span>({place.reviewCount})</span>
           <span>·</span>
@@ -63,7 +63,7 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({ place, saved, onSave, onVi
 };
 
 const Pill: React.FC<{ label: string }> = ({ label }) => (
-  <span className="rounded-full bg-warm-taupe/10 px-2.5 py-1 text-[11px] font-medium text-warm-taupe">
+  <span className="rounded-full bg-miyeon-main/10 px-2.5 py-1 text-[11px] font-medium text-miyeon-main">
     {label}
   </span>
 );

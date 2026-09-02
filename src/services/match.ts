@@ -2,12 +2,38 @@ import { MatchResult, Place, QuizAnswers, Treatment } from '../types';
 import { discoverPlaces } from './discovery';
 import { fetchPlaceById, fetchTreatments } from './places';
 
-// AI Matching & Place Ranking — Goun_PRD_v2_KTO_Design.md §9.
+// AI Matching & Place Ranking — MIYEON Core UX §02-6/§02-7.
 // Match Score = Concern + Result + Downtime + Budget + Timing + Location Fit
-// + Foreigner Friendliness. This is a transparent, client-side stand-in for
-// the real LLM/structured recommendation engine described in §13 (Tech
-// Stack — AI); it produces the same shape of output (MatchResult) so the UI
-// doesn't change when a real backend replaces it.
+// + Foreigner Friendliness + Vibe Fit. This is a transparent, client-side
+// stand-in for a real LLM/structured recommendation engine; it produces the
+// same shape of output (MatchResult) so the UI doesn't change when a real
+// backend replaces it.
+
+const NEEDLE_KEYWORDS = /inject|filler|botox|needle|thread/i;
+
+function vibeFit(vibes: string[], treatment: Treatment): number {
+  const factors: number[] = [];
+
+  const subtleDramatic = vibes[0];
+  if (subtleDramatic) {
+    const wantsDramatic = /clear difference/i.test(subtleDramatic);
+    const intensityScore: Record<Treatment['intensity'], number> = wantsDramatic
+      ? { high: 1, medium: 0.6, low: 0.2 }
+      : { low: 1, medium: 0.6, high: 0.2 };
+    factors.push(intensityScore[treatment.intensity]);
+  }
+
+  const needles = vibes[2];
+  if (needles) {
+    const isNeedleTreatment = NEEDLE_KEYWORDS.test(treatment.treatmentType);
+    const wantsNoNeedles = /no needles|nothing that breaks/i.test(needles);
+    const matched = wantsNoNeedles ? !isNeedleTreatment : true; // "needles are fine" never penalizes a device-based option
+    factors.push(matched ? 1 : 0.3);
+  }
+
+  if (factors.length === 0) return 1;
+  return factors.reduce((a, b) => a + b, 0) / factors.length;
+}
 
 const BUDGET_RANGE: Record<NonNullable<QuizAnswers['budget']>, [number, number]> = {
   'under-100': [0, 100],
@@ -63,7 +89,7 @@ export async function getMatches(
         category: answers.category,
         origin,
         keywordHints: answers.concerns,
-        englishFriendly: answers.other.includes('English Friendly') || answers.other.includes('First Time'),
+        englishFriendly: true, // every Miyeon user is assumed to need English support — always checked
       });
       if (live.treatments.length > 0) {
         candidates = live.treatments;
@@ -79,9 +105,6 @@ export async function getMatches(
     candidates = answers.category ? treatments.filter((t) => t.category === answers.category) : treatments;
   }
 
-  const wantsEnglish = answers.other.includes('English Friendly');
-  const wantsForeignerFirst = answers.other.includes('First Time');
-
   const scored = await Promise.all(
     candidates.map(async (treatment) => {
       const place = placeById.get(treatment.placeId) ?? (await fetchPlaceById(treatment.placeId));
@@ -92,11 +115,20 @@ export async function getMatches(
       const dFit = downtimeFit(answers.downtime, treatment.downtime);
       const bFit = budgetFit(answers.budget, treatment.price);
       const tFit = timingFit(answers.resultTiming, treatment.resultTiming);
+      const vFit = vibeFit(answers.vibes, treatment);
       const locationFit = place.foreignerFriendly ? 0.9 : 0.6;
-      const foreignerFit =
-        treatment.foreignerFriendliness * (wantsEnglish || wantsForeignerFirst ? 1.1 : 1);
+      const foreignerFit = treatment.foreignerFriendliness * 1.1; // English support is always checked
 
-      const weights = { cFit: 0.25, rFit: 0.15, dFit: 0.15, bFit: 0.15, tFit: 0.15, locationFit: 0.1, foreignerFit: 0.05 };
+      const weights = {
+        cFit: 0.25,
+        rFit: 0.05,
+        dFit: 0.15,
+        bFit: 0.15,
+        tFit: 0.15,
+        locationFit: 0.1,
+        foreignerFit: 0.05,
+        vFit: 0.1,
+      };
       const raw =
         cFit * weights.cFit +
         rFit * weights.rFit +
@@ -104,7 +136,8 @@ export async function getMatches(
         bFit * weights.bFit +
         tFit * weights.tFit +
         locationFit * weights.locationFit +
-        Math.min(1, foreignerFit) * weights.foreignerFit;
+        Math.min(1, foreignerFit) * weights.foreignerFit +
+        vFit * weights.vFit;
 
       const matchScore = Math.round(Math.min(0.99, raw) * 100);
 
@@ -113,7 +146,8 @@ export async function getMatches(
       if (dFit > 0.7) reasons.push('Suitable downtime');
       if (bFit > 0.7) reasons.push('Fits your budget');
       if (tFit > 0.7) reasons.push('Expected result timing');
-      if (wantsEnglish && treatment.foreignerFriendliness > 0.8) reasons.push('Foreigner-friendly');
+      if (vFit > 0.7) reasons.push('Matches your vibe');
+      if (treatment.foreignerFriendliness > 0.8) reasons.push('English consultation');
       reasons.push(`${place.area} location`);
 
       return { treatment, place, matchScore, reasons } satisfies MatchResult;

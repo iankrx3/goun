@@ -25,7 +25,7 @@ export const PostComposer: React.FC<PostComposerProps> = ({ session, onSignIn, o
     return (
       <button
         onClick={onSignIn}
-        className="w-full rounded-2xl border border-han-cream bg-han-cream/30 px-4 py-3.5 text-left text-sm text-warm-taupe/60"
+        className="w-full rounded-2xl border border-miyeon-neutral bg-miyeon-neutral/30 px-4 py-3.5 text-left text-sm text-miyeon-main/60"
       >
         Sign in to share your experience…
       </button>
@@ -44,7 +44,7 @@ export const PostComposer: React.FC<PostComposerProps> = ({ session, onSignIn, o
   };
 
   return (
-    <div className="rounded-2xl border border-han-cream bg-white p-4">
+    <div className="rounded-2xl border border-miyeon-neutral bg-white p-4">
       <div className="flex items-start gap-2.5">
         <img
           src={session.user.avatar_url}
@@ -57,7 +57,7 @@ export const PostComposer: React.FC<PostComposerProps> = ({ session, onSignIn, o
           onChange={(e) => setText(e.target.value)}
           placeholder="Share a place, treatment, or question…"
           rows={2}
-          className="w-full resize-none bg-transparent text-sm text-warm-taupe placeholder:text-warm-taupe/40 focus:outline-none"
+          className="w-full resize-none bg-transparent text-sm text-miyeon-main placeholder:text-miyeon-main/40 focus:outline-none"
         />
       </div>
 
@@ -68,7 +68,7 @@ export const PostComposer: React.FC<PostComposerProps> = ({ session, onSignIn, o
               key={cat.id}
               onClick={() => setCategory(cat.id)}
               className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold transition-colors ${
-                category === cat.id ? 'bg-warm-taupe text-white' : 'bg-han-cream/60 text-warm-taupe/70'
+                category === cat.id ? 'bg-miyeon-main text-white' : 'bg-miyeon-neutral/60 text-miyeon-main/70'
               }`}
             >
               {cat.label}
@@ -78,14 +78,14 @@ export const PostComposer: React.FC<PostComposerProps> = ({ session, onSignIn, o
         <button
           onClick={handleSubmit}
           disabled={!text.trim() || submitting}
-          className="shrink-0 rounded-full bg-goun-rose px-4 py-1.5 text-xs font-bold text-white shadow-sm shadow-goun-rose/30 disabled:opacity-40"
+          className="shrink-0 rounded-full bg-miyeon-sub1 px-4 py-1.5 text-xs font-bold text-white shadow-sm shadow-miyeon-sub1/30 disabled:opacity-40"
         >
           {submitting ? 'Posting…' : 'Post'}
         </button>
       </div>
 
       {session.user.id === DEMO_USER.id && (
-        <p className="mt-2.5 text-[11px] text-warm-taupe/50">
+        <p className="mt-2.5 text-[11px] text-miyeon-main/50">
           Demo mode saves to this browser only. Sign in with Google to keep your posts, likes, and comments across
           logins and devices.
         </p>

@@ -28,14 +28,14 @@ export default function App() {
 
   if (!authReady) {
     return (
-      <div className="flex h-screen items-center justify-center text-sm text-warm-taupe/60">
+      <div className="flex h-screen items-center justify-center text-sm text-miyeon-main/60">
         Signing you in…
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white text-warm-taupe">
+    <div className="min-h-screen bg-white text-miyeon-main">
       <NavHeader session={session} onSignIn={() => setIsAuthOpen(true)} onSignOut={signOut} />
 
       <Routes>

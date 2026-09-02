@@ -1,7 +1,8 @@
-# Goun (고운)
+# Miyeon (미연)
 
-AI Korean Beauty Discovery & Booking Platform — built from `Goun_PRD_v2_KTO_Design.md`.
-Map and Google login are ported from `extract/` (the Sniffood map+login kit).
+AI Korean Beauty Discovery & Booking Platform — Core UX per the MIYEON product spec
+(Explore → Personalize → SNIFF → AI Match → Book / Shop). Map and Google login are ported
+from `extract/` (the Sniffood map+login kit).
 
 ## Stack
 
@@ -72,7 +73,8 @@ quota on data.go.kr is 1,000 calls/day — results are cached for 10 minutes.
 - **AI matching** (`src/services/match.ts`) — a transparent client-side scorer
   implementing the §9 fit formula, standing in for the real LLM ranking engine
   in §13 until one exists.
-- Brand design tokens, Bodoni Moda / Satoshi / Pretendard, from PRD §15.4.
+- Brand design tokens (Soft Cocoa / Dusty Rose / Soft Blush / Warm Beige / White) and
+Satoshi / Pretendard typography, from the Miyeon brand board.
 
 ## Known gaps vs. the PRD
 

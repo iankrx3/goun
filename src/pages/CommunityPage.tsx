@@ -26,8 +26,8 @@ export default function CommunityPage({ session, onSignIn }: CommunityPageProps)
   return (
     <div className="mx-auto max-w-2xl space-y-5 px-4 py-8">
       <div>
-        <h1 className="font-display text-3xl text-warm-taupe">Community</h1>
-        <p className="mt-1 text-xs text-warm-taupe/60">
+        <h1 className="font-display text-3xl text-miyeon-main">Community</h1>
+        <p className="mt-1 text-xs text-miyeon-main/60">
           Real experiences with Korean beauty places and treatments — not a general feed.
         </p>
       </div>
@@ -40,7 +40,7 @@ export default function CommunityPage({ session, onSignIn }: CommunityPageProps)
             key={cat.id}
             onClick={() => setFilter(cat.id)}
             className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors ${
-              filter === cat.id ? 'bg-warm-taupe text-white' : 'bg-han-cream/60 text-warm-taupe/70'
+              filter === cat.id ? 'bg-miyeon-main text-white' : 'bg-miyeon-neutral/60 text-miyeon-main/70'
             }`}
           >
             {cat.label}
@@ -49,7 +49,7 @@ export default function CommunityPage({ session, onSignIn }: CommunityPageProps)
       </div>
 
       {loading ? (
-        <p className="py-10 text-center text-sm text-warm-taupe/50">Loading…</p>
+        <p className="py-10 text-center text-sm text-miyeon-main/50">Loading…</p>
       ) : (
         <div className="space-y-3">
           {filteredPosts.map((post) => (

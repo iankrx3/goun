@@ -7,21 +7,21 @@ import type { MedicalTourismMatch, WellnessSpot } from '../../types';
 // than showing a negative/"unverified" state.
 
 export const WellnessPickBadge: React.FC = () => (
-  <span className="inline-flex items-center gap-1 rounded-full bg-han-cream px-2.5 py-1 text-[11px] font-medium text-warm-taupe">
+  <span className="inline-flex items-center gap-1 rounded-full bg-miyeon-neutral px-2.5 py-1 text-[11px] font-medium text-miyeon-main">
     <Leaf className="h-3 w-3" />
     KTO Wellness Pick
   </span>
 );
 
 export const MedicalInfoBadge: React.FC = () => (
-  <span className="inline-flex items-center gap-1 rounded-full bg-han-cream px-2.5 py-1 text-[11px] font-medium text-warm-taupe">
+  <span className="inline-flex items-center gap-1 rounded-full bg-miyeon-neutral px-2.5 py-1 text-[11px] font-medium text-miyeon-main">
     <ShieldCheck className="h-3 w-3" />
     Registered with Korea Medical Tourism Info (KTO)
   </span>
 );
 
 export const KtoSourceNote: React.FC = () => (
-  <p className="text-[10px] text-warm-taupe/50">자료: 한국관광공사</p>
+  <p className="text-[10px] text-miyeon-main/50">자료: 한국관광공사</p>
 );
 
 export const NearbyWellnessSection: React.FC<{ spots?: WellnessSpot[] }> = ({ spots }) => {
@@ -29,15 +29,15 @@ export const NearbyWellnessSection: React.FC<{ spots?: WellnessSpot[] }> = ({ sp
   return (
     <section className="space-y-2">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-warm-taupe">Nearby Wellness</h3>
+        <h3 className="text-sm font-semibold text-miyeon-main">Nearby Wellness</h3>
         <WellnessPickBadge />
       </div>
       <div className="space-y-2">
         {spots.map((spot) => (
-          <div key={spot.id} className="rounded-2xl border border-han-cream bg-white p-3">
-            <p className="text-sm font-medium text-warm-taupe">{spot.name}</p>
-            {spot.intro && <p className="mt-0.5 text-xs text-warm-taupe/70">{spot.intro}</p>}
-            <p className="mt-1 text-[11px] text-warm-taupe/50">
+          <div key={spot.id} className="rounded-2xl border border-miyeon-neutral bg-white p-3">
+            <p className="text-sm font-medium text-miyeon-main">{spot.name}</p>
+            {spot.intro && <p className="mt-0.5 text-xs text-miyeon-main/70">{spot.intro}</p>}
+            <p className="mt-1 text-[11px] text-miyeon-main/50">
               {spot.address}
               {spot.distanceKm != null ? ` · ${spot.distanceKm.toFixed(1)}km away` : ''}
             </p>
@@ -54,7 +54,7 @@ export const MedicalTourismSection: React.FC<{ match?: MedicalTourismMatch }> = 
   return (
     <section className="space-y-2">
       <MedicalInfoBadge />
-      <p className="text-[11px] text-warm-taupe/60">
+      <p className="text-[11px] text-miyeon-main/60">
         {match.departments.join(', ')} · Supports {match.supportedLanguages.join(', ')}
       </p>
       <KtoSourceNote />

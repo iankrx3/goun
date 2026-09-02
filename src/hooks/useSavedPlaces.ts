@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 
-// "Save to My Map" — Goun_PRD_v2_KTO_Design.md §3. Stored client-side for now;
+// "Save to My Map" — the MIYEON Core UX spec §3. Stored client-side for now;
 // once user accounts persist server-side, swap this for a `saved_places` table
 // keyed by session.user.id and keep the same hook signature.
-const STORAGE_KEY = 'goun_my_map';
+const STORAGE_KEY = 'miyeon_my_map';
 
 function readSaved(): string[] {
   try {

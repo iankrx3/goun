@@ -43,24 +43,24 @@ export const GroundedInfo: React.FC<{ place: Place }> = ({ place }) => {
 
   return (
     <section className="space-y-2">
-      <h3 className="text-sm font-semibold text-warm-taupe">Latest info</h3>
+      <h3 className="text-sm font-semibold text-miyeon-main">Latest info</h3>
 
       {status === 'idle' && (
         <button
           onClick={handleFetch}
-          className="flex items-center gap-1.5 rounded-full border border-han-cream px-3.5 py-1.5 text-xs font-semibold text-warm-taupe hover:border-goun-rose/50"
+          className="flex items-center gap-1.5 rounded-full border border-miyeon-neutral px-3.5 py-1.5 text-xs font-semibold text-miyeon-main hover:border-miyeon-sub1/50"
         >
           <Sparkles className="h-3.5 w-3.5" /> Get latest info
         </button>
       )}
 
-      {status === 'loading' && <p className="text-xs text-warm-taupe/60">Searching…</p>}
+      {status === 'loading' && <p className="text-xs text-miyeon-main/60">Searching…</p>}
 
-      {status === 'error' && <p className="text-xs text-warm-taupe/60">Couldn't find anything new right now.</p>}
+      {status === 'error' && <p className="text-xs text-miyeon-main/60">Couldn't find anything new right now.</p>}
 
       {status === 'done' && info && (
-        <div className="space-y-2 rounded-2xl border border-han-cream bg-white p-3">
-          <p className="text-sm text-warm-taupe/80">{info.summary}</p>
+        <div className="space-y-2 rounded-2xl border border-miyeon-neutral bg-white p-3">
+          <p className="text-sm text-miyeon-main/80">{info.summary}</p>
           {info.sources.length > 0 && (
             <div className="flex flex-wrap gap-x-3 gap-y-1">
               {info.sources.map((source) => (
@@ -69,14 +69,14 @@ export const GroundedInfo: React.FC<{ place: Place }> = ({ place }) => {
                   href={source.uri}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-[11px] text-warm-taupe/50 underline hover:text-goun-rose"
+                  className="text-[11px] text-miyeon-main/50 underline hover:text-miyeon-sub1"
                 >
                   {source.title || source.uri}
                 </a>
               ))}
             </div>
           )}
-          <p className="text-[10px] text-warm-taupe/40">AI-generated from Google Search — verify before you go.</p>
+          <p className="text-[10px] text-miyeon-main/40">AI-generated from Google Search — verify before you go.</p>
         </div>
       )}
     </section>

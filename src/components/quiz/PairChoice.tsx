@@ -16,8 +16,8 @@ export const PairChoice: React.FC<PairChoiceProps> = ({ pair, value, onChange })
         onClick={() => onChange(option)}
         className={`rounded-2xl border px-3 py-4 text-sm font-medium transition-all ${
           value === option
-            ? 'border-goun-rose bg-goun-rose text-white shadow-sm shadow-goun-rose/25'
-            : 'border-han-cream bg-white text-warm-taupe hover:border-goun-rose/50'
+            ? 'border-miyeon-sub1 bg-miyeon-sub1 text-white shadow-sm shadow-miyeon-sub1/25'
+            : 'border-miyeon-neutral bg-white text-miyeon-main hover:border-miyeon-sub1/50'
         }`}
       >
         {option}

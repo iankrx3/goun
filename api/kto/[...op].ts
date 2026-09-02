@@ -23,7 +23,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
   upstream.searchParams.set('serviceKey', decodeServiceKey(ktoKey));
   if (!upstream.searchParams.has('MobileOS')) upstream.searchParams.set('MobileOS', 'ETC');
-  if (!upstream.searchParams.has('MobileApp')) upstream.searchParams.set('MobileApp', 'Goun');
+  if (!upstream.searchParams.has('MobileApp')) upstream.searchParams.set('MobileApp', 'Miyeon');
   if (!upstream.searchParams.has('_type')) upstream.searchParams.set('_type', 'json');
   if (!upstream.searchParams.has('langDivCd')) upstream.searchParams.set('langDivCd', 'ENG');
 

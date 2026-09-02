@@ -25,7 +25,7 @@ export const AITransition: React.FC<AITransitionProps> = ({ onDone }) => {
       <motion.div
         animate={{ rotate: 360 }}
         transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-        className="flex h-14 w-14 items-center justify-center rounded-full bg-goun-rose text-white"
+        className="flex h-14 w-14 items-center justify-center rounded-full bg-miyeon-sub1 text-white"
       >
         <Sparkles className="h-6 w-6" />
       </motion.div>
@@ -35,7 +35,7 @@ export const AITransition: React.FC<AITransitionProps> = ({ onDone }) => {
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -6 }}
-          className="font-display text-xl text-warm-taupe"
+          className="font-display text-xl text-miyeon-main"
         >
           {aiTransitionMessages[step]}
         </motion.p>

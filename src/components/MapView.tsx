@@ -7,7 +7,7 @@ import { fetchCreatorPicks, fetchPlaces } from '../services/places';
 
 // Adapted from extract/src/components/MapView.tsx (Sniffood map + login kit).
 // Same Leaflet/MapTiler setup and custom controls; filter modes and pin data
-// swapped from restaurant curators to Goun's beauty Place/Category model
+// swapped from restaurant curators to Miyeon's beauty Place/Category model
 // (§3 MAP) plus a KTO Wellness pin layer (§7.2 use case ②, deferred to V1
 // in the PRD but wired here since the data shape already supports it).
 
@@ -131,7 +131,7 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
         html: `
           <div style="
             display:flex;align-items:center;justify-content:center;
-            width:36px;height:36px;background:#B98278;color:white;
+            width:36px;height:36px;background:#D49A9A;color:white;
             border-radius:50%;box-shadow:0 4px 14px rgba(185,130,120,0.45);
             border:2px solid white;cursor:pointer;
           ">
@@ -147,8 +147,8 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
       marker.bindPopup(`
         <div style="padding:6px;font-family:inherit;">
           <img src="${place.photoUrl}" style="width:100%;height:90px;object-fit:cover;border-radius:8px;margin-bottom:6px;" />
-          <div style="font-size:13px;font-weight:bold;color:#76645D;">${place.name}</div>
-          <div style="font-size:11px;color:#B98278;font-weight:600;margin-top:2px;">★ ${place.rating} · ${place.area}</div>
+          <div style="font-size:13px;font-weight:bold;color:#5A514D;">${place.name}</div>
+          <div style="font-size:11px;color:#D49A9A;font-weight:600;margin-top:2px;">★ ${place.rating} · ${place.area}</div>
         </div>
       `);
 
@@ -157,7 +157,7 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
     });
   }, [places, filterMode, selectedCategory, selectedPick, getFilteredPlaces, onSelectPlace]);
 
-  // KTO Wellness pins — tone-down Warm Taupe marker, visually distinct from Goun Rose beauty pins (§15.3)
+  // KTO Wellness pins — tone-down Warm Taupe marker, visually distinct from Miyeon Rose beauty pins (§15.3)
   useEffect(() => {
     const layer = wellnessLayerRef.current;
     if (!layer) return;
@@ -172,7 +172,7 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
           html: `
             <div style="
               display:flex;align-items:center;justify-content:center;
-              width:28px;height:28px;background:#76645D;color:white;
+              width:28px;height:28px;background:#5A514D;color:white;
               border-radius:50%;box-shadow:0 3px 10px rgba(118,100,93,0.4);
               border:2px solid white;
             ">
@@ -185,8 +185,8 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
         const marker = L.marker([spot.latitude, spot.longitude], { icon });
         marker.bindPopup(`
           <div style="padding:6px;font-family:inherit;">
-            <div style="font-size:12px;font-weight:bold;color:#76645D;">🌿 ${spot.name}</div>
-            <div style="font-size:10px;color:#76645D;margin-top:2px;">KTO Wellness Pick · 자료: 한국관광공사</div>
+            <div style="font-size:12px;font-weight:bold;color:#5A514D;">🌿 ${spot.name}</div>
+            <div style="font-size:10px;color:#5A514D;margin-top:2px;">KTO Wellness Pick · 자료: 한국관광공사</div>
           </div>
         `);
         layer.addLayer(marker);
@@ -279,17 +279,17 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
   };
 
   return (
-    <div className="relative h-[calc(100vh-64px)] w-full overflow-hidden bg-han-cream/30">
+    <div className="relative h-[calc(100vh-64px)] w-full overflow-hidden bg-miyeon-neutral/30">
       <div ref={mapContainerRef} className="h-full w-full z-0" />
 
       {loading && (
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/60">
-          <Loader2 className="h-6 w-6 animate-spin text-goun-rose" />
+          <Loader2 className="h-6 w-6 animate-spin text-miyeon-sub1" />
         </div>
       )}
 
       {locationError && (
-        <div className="absolute bottom-5 left-1/2 z-30 -translate-x-1/2 whitespace-nowrap rounded-full bg-warm-taupe/90 px-4 py-2 text-xs font-medium text-white shadow-xl backdrop-blur-md">
+        <div className="absolute bottom-5 left-1/2 z-30 -translate-x-1/2 whitespace-nowrap rounded-full bg-miyeon-main/90 px-4 py-2 text-xs font-medium text-white shadow-xl backdrop-blur-md">
           ⚠️ {locationError}
         </div>
       )}
@@ -309,7 +309,7 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
       <div className="absolute top-3 left-3 right-3 z-10 mx-auto max-w-2xl space-y-2 pointer-events-none">
         <div className="pointer-events-auto relative">
           <div className="flex items-center gap-2 rounded-2xl bg-white/95 shadow-lg backdrop-blur-md border border-white/60 px-3.5 py-2.5">
-            <Search className="h-4 w-4 shrink-0 text-warm-taupe/60" />
+            <Search className="h-4 w-4 shrink-0 text-miyeon-main/60" />
             <input
               type="text"
               placeholder="Search Korean beauty places..."
@@ -319,29 +319,29 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
                 setIsSearchOpen(true);
               }}
               onFocus={() => setIsSearchOpen(true)}
-              className="flex-1 bg-transparent text-xs text-warm-taupe placeholder-warm-taupe/40 focus:outline-none"
+              className="flex-1 bg-transparent text-xs text-miyeon-main placeholder-miyeon-main/40 focus:outline-none"
             />
             {searchQuery && (
-              <button onClick={() => { setSearchQuery(''); setIsSearchOpen(false); }} className="text-warm-taupe/50">
+              <button onClick={() => { setSearchQuery(''); setIsSearchOpen(false); }} className="text-miyeon-main/50">
                 <X className="h-3.5 w-3.5" />
               </button>
             )}
           </div>
 
           {isSearchOpen && searchQuery && searchResults.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1.5 max-h-72 overflow-y-auto no-scrollbar rounded-2xl border border-han-cream bg-white shadow-2xl">
+            <div className="absolute top-full left-0 right-0 mt-1.5 max-h-72 overflow-y-auto no-scrollbar rounded-2xl border border-miyeon-neutral bg-white shadow-2xl">
               {searchResults.map((p) => (
                 <button
                   key={p.id}
                   onClick={() => handleJumpToPlace(p)}
-                  className="flex w-full items-center gap-3 px-3.5 py-2.5 hover:bg-han-cream/30"
+                  className="flex w-full items-center gap-3 px-3.5 py-2.5 hover:bg-miyeon-neutral/30"
                 >
                   <span className="text-lg leading-none">{categoryMeta[p.category].icon}</span>
                   <div className="min-w-0 flex-1 text-left">
-                    <p className="truncate text-xs font-semibold text-warm-taupe">{p.name}</p>
-                    <p className="text-[10px] text-warm-taupe/60">{p.area} · ★{p.rating}</p>
+                    <p className="truncate text-xs font-semibold text-miyeon-main">{p.name}</p>
+                    <p className="text-[10px] text-miyeon-main/60">{p.area} · ★{p.rating}</p>
                   </div>
-                  <ChevronRight className="h-3.5 w-3.5 shrink-0 text-warm-taupe/40" />
+                  <ChevronRight className="h-3.5 w-3.5 shrink-0 text-miyeon-main/40" />
                 </button>
               ))}
             </div>
@@ -359,7 +359,7 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
                   key={mode.id}
                   onClick={() => handleSetFilterMode(mode.id)}
                   className={`rounded-full px-3.5 py-1.5 text-[11px] font-bold shadow-sm backdrop-blur-md transition-all whitespace-nowrap ${
-                    filterMode === mode.id ? 'bg-warm-taupe text-white' : 'bg-white/90 text-warm-taupe/70 hover:bg-white'
+                    filterMode === mode.id ? 'bg-miyeon-main text-white' : 'bg-white/90 text-miyeon-main/70 hover:bg-white'
                   }`}
                 >
                   {mode.label}
@@ -393,7 +393,7 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
       {creatorPicks.length > 0 && !(isSearchOpen && searchQuery) && (
         <div className="pointer-events-none absolute top-[132px] left-3 right-3 z-10 mx-auto max-w-2xl">
           <div className="pointer-events-auto rounded-2xl bg-white/90 p-3 shadow-lg backdrop-blur-md border border-white/60">
-            <p className="mb-2 px-1 text-[11px] font-bold uppercase tracking-wider text-warm-taupe/60">
+            <p className="mb-2 px-1 text-[11px] font-bold uppercase tracking-wider text-miyeon-main/60">
               Curated by Creators
             </p>
             <div className="flex items-center gap-3 overflow-x-auto no-scrollbar py-1">
@@ -407,9 +407,9 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
                     src={pick.creator.avatar_url}
                     alt={pick.creator.display_name}
                     referrerPolicy="no-referrer"
-                    className="h-11 w-11 rounded-full object-cover ring-2 ring-goun-rose/30 group-hover:ring-goun-rose"
+                    className="h-11 w-11 rounded-full object-cover ring-2 ring-miyeon-sub1/30 group-hover:ring-miyeon-sub1"
                   />
-                  <span className="max-w-[70px] truncate text-[11px] font-medium text-warm-taupe">
+                  <span className="max-w-[70px] truncate text-[11px] font-medium text-miyeon-main">
                     @{pick.creator.username}
                   </span>
                 </button>
@@ -433,7 +433,7 @@ const MapButton: React.FC<{ onClick: () => void; label: string; active?: boolean
     aria-label={label}
     title={label}
     className={`flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-lg border border-black/5 transition-all hover:scale-105 active:scale-95 ${
-      active ? 'text-[#007AFF] ring-2 ring-[#007AFF]/40' : 'text-warm-taupe hover:text-goun-rose'
+      active ? 'text-[#007AFF] ring-2 ring-[#007AFF]/40' : 'text-miyeon-main hover:text-miyeon-sub1'
     }`}
   >
     {children}
@@ -448,7 +448,7 @@ const FilterChip: React.FC<{ active: boolean; label: string; onClick: () => void
   <button
     onClick={onClick}
     className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-bold shadow-md backdrop-blur-md transition-all whitespace-nowrap ${
-      active ? 'bg-goun-rose text-white shadow-goun-rose/25' : 'bg-white/95 text-warm-taupe/70 hover:bg-white hover:text-goun-rose'
+      active ? 'bg-miyeon-sub1 text-white shadow-miyeon-sub1/25' : 'bg-white/95 text-miyeon-main/70 hover:bg-white hover:text-miyeon-sub1'
     }`}
   >
     {label}

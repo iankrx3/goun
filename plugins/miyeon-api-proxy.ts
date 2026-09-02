@@ -31,7 +31,7 @@ const PLACES_FIELD_MASK = [
   'places.googleMapsUri',
 ].join(',');
 
-export interface GounApiProxyOptions {
+export interface MiyeonApiProxyOptions {
   ktoKey?: string;
   googleKey?: string;
   geminiKey?: string;
@@ -74,7 +74,7 @@ async function handleKto(url: URL, res: ServerResponse, ktoKey: string) {
   });
   upstream.searchParams.set('serviceKey', decodeServiceKey(ktoKey));
   if (!upstream.searchParams.has('MobileOS')) upstream.searchParams.set('MobileOS', 'ETC');
-  if (!upstream.searchParams.has('MobileApp')) upstream.searchParams.set('MobileApp', 'Goun');
+  if (!upstream.searchParams.has('MobileApp')) upstream.searchParams.set('MobileApp', 'Miyeon');
   if (!upstream.searchParams.has('_type')) upstream.searchParams.set('_type', 'json');
   if (!upstream.searchParams.has('langDivCd')) upstream.searchParams.set('langDivCd', 'ENG');
 
@@ -167,7 +167,7 @@ async function handleGeminiGround(req: IncomingMessage, res: ServerResponse, gem
   res.end(text);
 }
 
-function attach(server: ViteDevServer, options: GounApiProxyOptions) {
+function attach(server: ViteDevServer, options: MiyeonApiProxyOptions) {
   server.middlewares.use(async (req, res, next) => {
     const rawUrl = req.url || '';
     if (!rawUrl.startsWith('/api/')) {
@@ -230,9 +230,9 @@ function attach(server: ViteDevServer, options: GounApiProxyOptions) {
   });
 }
 
-export function gounApiProxy(options: GounApiProxyOptions): Plugin {
+export function miyeonApiProxy(options: MiyeonApiProxyOptions): Plugin {
   return {
-    name: 'goun-api-proxy',
+    name: 'miyeon-api-proxy',
     configureServer(server) {
       attach(server, options);
     },

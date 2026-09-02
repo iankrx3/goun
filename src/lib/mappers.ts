@@ -88,7 +88,7 @@ export function mapAuthSession(user: User, creator?: Creator | null): UserSessio
   const avatar =
     meta.avatar_url ||
     meta.picture ||
-    `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=B98278&color=fff`;
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=D49A9A&color=fff`;
 
   return {
     isLoggedIn: true,

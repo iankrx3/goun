@@ -2,14 +2,20 @@ import React, { useState } from 'react';
 import { ChevronLeft } from 'lucide-react';
 import type { BeautyCategory, MatchResult, QuizAnswers } from '../types';
 import { categoryMeta } from '../data/mock';
-import { budgetOptions, downtimeOptions, otherOptions, resultTimingOptions, vibePairs, whatOptions } from '../data/quiz';
+import { budgetOptions, downtimeOptions, tripLengthOptions, vibePairs, whatOptions } from '../data/quiz';
+import { ModeSelect } from '../components/quiz/ModeSelect';
 import { CategoryRadial } from '../components/quiz/CategoryRadial';
 import { PairChoice } from '../components/quiz/PairChoice';
 import { AITransition } from '../components/quiz/AITransition';
 import { ResultCard } from '../components/ResultCard';
+import { ProductCommerce } from '../components/ProductCommerce';
+import { EmailCaptureCard } from '../components/EmailCaptureCard';
 import { getMatches } from '../services/match';
+import { buildPickQuote } from '../lib/pickCopy';
 
-type Step = 'home' | 'what' | 'vibe' | 'constraints' | 'transition' | 'results';
+type Step = 'home' | 'category' | 'area' | 'what' | 'vibe' | 'constraints' | 'transition' | 'results';
+
+const TREATMENT_CATEGORIES: BeautyCategory[] = ['skin', 'face'];
 
 const emptyAnswers: QuizAnswers = {
   category: null,
@@ -18,7 +24,7 @@ const emptyAnswers: QuizAnswers = {
   downtime: null,
   resultTiming: null,
   budget: null,
-  other: [],
+  tripLength: null,
 };
 
 export default function ExplorePage() {
@@ -44,15 +50,11 @@ export default function ExplorePage() {
     setAnswers((prev) => {
       const vibes = [...prev.vibes];
       vibes[pairIndex] = value;
-      return { ...prev, vibes };
+      // Pair 2 (Fast Results vs Long-term) doubles as the old standalone "result timing" question.
+      const resultTiming =
+        pairIndex === 1 ? (/fast results/i.test(value) ? 'asap' : 'long-term') : prev.resultTiming;
+      return { ...prev, vibes, resultTiming };
     });
-  };
-
-  const toggleOther = (opt: string) => {
-    setAnswers((prev) => ({
-      ...prev,
-      other: prev.other.includes(opt) ? prev.other.filter((o) => o !== opt) : [...prev.other, opt],
-    }));
   };
 
   const handlePick = async () => {
@@ -60,17 +62,7 @@ export default function ExplorePage() {
   };
 
   const handleTransitionDone = async () => {
-    let origin: { lat: number; lng: number } | undefined;
-    if (answers.other.includes('Near Me') && navigator.geolocation) {
-      origin = await new Promise((resolve) => {
-        navigator.geolocation.getCurrentPosition(
-          (position) => resolve({ lat: position.coords.latitude, lng: position.coords.longitude }),
-          () => resolve(undefined),
-          { enableHighAccuracy: true, timeout: 4000, maximumAge: 60_000 }
-        );
-      });
-    }
-    const matches = await getMatches(answers, origin);
+    const matches = await getMatches(answers);
     setResults(matches);
     setStep('results');
   };
@@ -86,24 +78,68 @@ export default function ExplorePage() {
       {step === 'home' && (
         <div className="space-y-8 text-center">
           <div>
-            <h1 className="font-display text-4xl leading-tight text-warm-taupe sm:text-5xl">
-              Find your Korean
+            <h1 className="font-display text-3xl font-semibold leading-tight text-miyeon-main sm:text-4xl">
+              You know Korean beauty
               <br />
-              beauty match.
+              treatments are good.
+              <br />
+              You just don't know
+              <br />
+              which one you need.
             </h1>
-            <p className="mx-auto mt-3 max-w-sm text-sm text-warm-taupe/60">
-              Tell Goun what you're after — AI narrows thousands of treatments down to 3 that actually fit you.
+            <p className="mx-auto mt-4 max-w-sm text-sm text-miyeon-main/60">
+              3 questions. 30 seconds.
+              <br />
+              Find your personalized Korean beauty match.
             </p>
+            <p className="mt-3 text-xs font-semibold text-miyeon-sub1">Used by 1,200+ travelers</p>
           </div>
-          <CategoryRadial onSelect={selectCategory} />
+          <button
+            onClick={() => setStep('category')}
+            className="rounded-full bg-miyeon-sub1 px-8 py-3.5 text-sm font-bold text-white shadow-sm shadow-miyeon-sub1/30"
+          >
+            Find My Match →
+          </button>
+        </div>
+      )}
+
+      {step === 'category' && (
+        <div className="space-y-6">
+          <button
+            onClick={() => setStep('home')}
+            className="flex items-center gap-1 text-xs font-semibold text-miyeon-main/60"
+          >
+            <ChevronLeft className="h-3.5 w-3.5" /> Back
+          </button>
+          <div className="text-center">
+            <h2 className="font-display text-2xl text-miyeon-main">What are you here for?</h2>
+            <p className="mt-1 text-xs text-miyeon-main/60">Pick one to get started.</p>
+          </div>
+          <ModeSelect onSelectTreatments={() => setStep('area')} />
+        </div>
+      )}
+
+      {step === 'area' && (
+        <div className="space-y-8 text-center">
+          <button
+            onClick={() => setStep('category')}
+            className="flex items-center gap-1 text-xs font-semibold text-miyeon-main/60"
+          >
+            <ChevronLeft className="h-3.5 w-3.5" /> Back
+          </button>
+          <div>
+            <h2 className="font-display text-2xl text-miyeon-main">Miyeon starts asking.</h2>
+            <p className="mt-1 text-xs text-miyeon-main/60">Where should we start?</p>
+          </div>
+          <CategoryRadial categories={TREATMENT_CATEGORIES} centerLabel="✨" onSelect={selectCategory} />
         </div>
       )}
 
       {step === 'what' && answers.category && (
         <QuizShell
-          title="What are you looking for?"
+          title="Tell Miyeon what you're looking for."
           subtitle={`${categoryMeta[answers.category].icon} ${categoryMeta[answers.category].label} · pick as many as apply`}
-          onBack={() => setStep('home')}
+          onBack={() => setStep('area')}
           onNext={() => setStep('vibe')}
           nextDisabled={answers.concerns.length === 0}
         >
@@ -114,8 +150,8 @@ export default function ExplorePage() {
                 onClick={() => toggleConcern(opt)}
                 className={`rounded-full border px-4 py-2 text-sm font-medium transition-all ${
                   answers.concerns.includes(opt)
-                    ? 'border-goun-rose bg-goun-rose text-white'
-                    : 'border-han-cream bg-white text-warm-taupe hover:border-goun-rose/50'
+                    ? 'border-miyeon-sub1 bg-miyeon-sub1 text-white'
+                    : 'border-miyeon-neutral bg-white text-miyeon-main hover:border-miyeon-sub1/50'
                 }`}
               >
                 {opt}
@@ -128,7 +164,7 @@ export default function ExplorePage() {
       {step === 'vibe' && answers.category && (
         <QuizShell
           title="Which feels more like you?"
-          subtitle="Three quick calls — A or B."
+          subtitle="Choose one from each pair."
           onBack={() => setStep('what')}
           onNext={() => setStep('constraints')}
           nextDisabled={answers.vibes.filter(Boolean).length < vibePairs[answers.category].length}
@@ -143,15 +179,25 @@ export default function ExplorePage() {
 
       {step === 'constraints' && (
         <QuizShell
-          title="A few quick constraints"
-          subtitle="Helps Goun fit this into your trip."
+          title="The practical bit."
+          subtitle="Last one. Promise."
           onBack={() => setStep('vibe')}
           onNext={handlePick}
           nextLabel="PICK"
-          nextDisabled={!answers.downtime || !answers.resultTiming || !answers.budget}
+          nextDisabled={!answers.tripLength || !answers.downtime || !answers.budget}
         >
           <div className="space-y-5">
-            <ConstraintGroup label="🕐 Downtime">
+            <ConstraintGroup label="🗓 How long are you in Korea?">
+              {tripLengthOptions.map((opt) => (
+                <ChoiceChip
+                  key={opt.id}
+                  active={answers.tripLength === opt.id}
+                  label={opt.label}
+                  onClick={() => setAnswers((p) => ({ ...p, tripLength: opt.id }))}
+                />
+              ))}
+            </ConstraintGroup>
+            <ConstraintGroup label="🕐 How much downtime can you afford?">
               {downtimeOptions.map((opt) => (
                 <ChoiceChip
                   key={opt.id}
@@ -161,17 +207,7 @@ export default function ExplorePage() {
                 />
               ))}
             </ConstraintGroup>
-            <ConstraintGroup label="⚡ Results">
-              {resultTimingOptions.map((opt) => (
-                <ChoiceChip
-                  key={opt.id}
-                  active={answers.resultTiming === opt.id}
-                  label={opt.label}
-                  onClick={() => setAnswers((p) => ({ ...p, resultTiming: opt.id }))}
-                />
-              ))}
-            </ConstraintGroup>
-            <ConstraintGroup label="💰 Budget">
+            <ConstraintGroup label="💰 Budget per treatment">
               {budgetOptions.map((opt) => (
                 <ChoiceChip
                   key={opt.id}
@@ -179,11 +215,6 @@ export default function ExplorePage() {
                   label={opt.label}
                   onClick={() => setAnswers((p) => ({ ...p, budget: opt.id }))}
                 />
-              ))}
-            </ConstraintGroup>
-            <ConstraintGroup label="🌎 Other">
-              {otherOptions.map((opt) => (
-                <ChoiceChip key={opt} active={answers.other.includes(opt)} label={opt} onClick={() => toggleOther(opt)} />
               ))}
             </ConstraintGroup>
           </div>
@@ -195,21 +226,33 @@ export default function ExplorePage() {
       {step === 'results' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="font-display text-2xl text-warm-taupe">Your best matches</h2>
-            <button onClick={restart} className="text-xs font-semibold text-warm-taupe/60 hover:text-goun-rose">
+            <div>
+              <h2 className="font-display text-2xl text-miyeon-main">Miyeon's Picks</h2>
+              <p className="text-xs text-miyeon-main/60">Based on your goals, preferences & trip.</p>
+            </div>
+            <button onClick={restart} className="text-xs font-semibold text-miyeon-main/60 hover:text-miyeon-sub1">
               Start over
             </button>
           </div>
           {results.length === 0 ? (
-            <p className="text-sm text-warm-taupe/60">
+            <p className="text-sm text-miyeon-main/60">
               No matches yet — try widening your constraints and pick again.
             </p>
           ) : (
-            <div className="space-y-4">
-              {results.map((r, i) => (
-                <ResultCard key={r.treatment.id} result={r} rank={(i + 1) as 1 | 2 | 3} />
-              ))}
-            </div>
+            <>
+              <div className="space-y-4">
+                {results.map((r, i) => (
+                  <ResultCard
+                    key={r.treatment.id}
+                    result={r}
+                    rank={(i + 1) as 1 | 2 | 3}
+                    quote={i === 0 ? buildPickQuote(answers) : undefined}
+                  />
+                ))}
+              </div>
+              <ProductCommerce concerns={answers.concerns} />
+              <EmailCaptureCard answers={answers} topTreatmentId={results[0]?.treatment.id ?? null} />
+            </>
           )}
         </div>
       )}
@@ -227,18 +270,18 @@ const QuizShell: React.FC<{
   children: React.ReactNode;
 }> = ({ title, subtitle, onBack, onNext, nextLabel = 'Next', nextDisabled, children }) => (
   <div className="space-y-6">
-    <button onClick={onBack} className="flex items-center gap-1 text-xs font-semibold text-warm-taupe/60">
+    <button onClick={onBack} className="flex items-center gap-1 text-xs font-semibold text-miyeon-main/60">
       <ChevronLeft className="h-3.5 w-3.5" /> Back
     </button>
     <div>
-      <h2 className="font-display text-2xl text-warm-taupe">{title}</h2>
-      <p className="mt-1 text-xs text-warm-taupe/60">{subtitle}</p>
+      <h2 className="font-display text-2xl text-miyeon-main">{title}</h2>
+      <p className="mt-1 text-xs text-miyeon-main/60">{subtitle}</p>
     </div>
     {children}
     <button
       onClick={onNext}
       disabled={nextDisabled}
-      className="w-full rounded-full bg-goun-rose py-3.5 text-sm font-bold text-white shadow-sm shadow-goun-rose/30 disabled:opacity-30"
+      className="w-full rounded-full bg-miyeon-sub1 py-3.5 text-sm font-bold text-white shadow-sm shadow-miyeon-sub1/30 disabled:opacity-30"
     >
       {nextLabel}
     </button>
@@ -247,7 +290,7 @@ const QuizShell: React.FC<{
 
 const ConstraintGroup: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
   <div>
-    <p className="mb-2 text-xs font-semibold text-warm-taupe/70">{label}</p>
+    <p className="mb-2 text-xs font-semibold text-miyeon-main/70">{label}</p>
     <div className="flex flex-wrap gap-2">{children}</div>
   </div>
 );
@@ -256,7 +299,7 @@ const ChoiceChip: React.FC<{ active: boolean; label: string; onClick: () => void
   <button
     onClick={onClick}
     className={`rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all ${
-      active ? 'border-goun-rose bg-goun-rose text-white' : 'border-han-cream bg-white text-warm-taupe hover:border-goun-rose/50'
+      active ? 'border-miyeon-sub1 bg-miyeon-sub1 text-white' : 'border-miyeon-neutral bg-white text-miyeon-main hover:border-miyeon-sub1/50'
     }`}
   >
     {label}

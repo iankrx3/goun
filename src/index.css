@@ -3,24 +3,25 @@
 @tailwind utilities;
 
 :root {
-  /* Brand colors — PRD §15.4 */
-  --goun-rose: #b98278;
-  --han-cream: #e8d8d1;
-  --warm-taupe: #76645d;
-  --goun-white: #ffffff;
+  /* Brand colors — Miyeon brand board */
+  --miyeon-main: #5a514d;
+  --miyeon-sub1: #d49a9a;
+  --miyeon-sub2: #f7e6e6;
+  --miyeon-neutral: #f3ede6;
+  --miyeon-base: #ffffff;
 
   /* Semantic */
-  --color-bg-primary: var(--goun-white);
-  --color-bg-secondary: var(--han-cream);
-  --color-text-primary: var(--warm-taupe);
-  --color-text-inverse: var(--goun-white);
-  --color-accent: var(--goun-rose);
-  --color-border: var(--han-cream);
+  --color-bg-primary: var(--miyeon-base);
+  --color-bg-secondary: var(--miyeon-neutral);
+  --color-text-primary: var(--miyeon-main);
+  --color-text-inverse: var(--miyeon-base);
+  --color-accent: var(--miyeon-sub1);
+  --color-border: var(--miyeon-neutral);
 
   /* Typography */
-  --font-eng-main: 'Bodoni Moda', 'Bodoni', serif;
+  --font-eng-main: 'Satoshi', 'Pretendard', sans-serif;
   --font-eng-sub: 'Satoshi', 'Pretendard', sans-serif;
-  --font-kr: 'Pretendard', sans-serif; /* placeholder — unconfirmed, PRD §15.2 */
+  --font-kr: 'Pretendard', sans-serif;
 }
 
 html,

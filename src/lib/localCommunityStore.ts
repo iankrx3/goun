@@ -3,9 +3,9 @@ import type { CommunityPost, PostComment } from '../types';
 // Fallback persistence for community writes when Supabase isn't configured, or a write
 // fails (e.g. the demo session's user id isn't a real auth.users row). Mirrors
 // hooks/useSavedPlaces.ts's localStorage pattern.
-const POSTS_KEY = 'goun_local_posts';
-const LIKED_KEY = 'goun_liked_post_ids';
-const COMMENTS_KEY = 'goun_local_comments';
+const POSTS_KEY = 'miyeon_local_posts';
+const LIKED_KEY = 'miyeon_liked_post_ids';
+const COMMENTS_KEY = 'miyeon_local_comments';
 
 function readJson<T>(key: string, fallback: T): T {
   try {

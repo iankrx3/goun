@@ -15,7 +15,7 @@ export const ShareButton: React.FC<ShareButtonProps> = ({ postId, title, classNa
 
     if (navigator.share) {
       try {
-        await navigator.share({ title: title || 'Goun Community', url });
+        await navigator.share({ title: title || 'Miyeon Community', url });
       } catch {
         // user cancelled the native share sheet — nothing more to do
       }
@@ -34,12 +34,12 @@ export const ShareButton: React.FC<ShareButtonProps> = ({ postId, title, classNa
   return (
     <button
       onClick={handleShare}
-      className={`relative flex items-center gap-1.5 text-xs font-semibold text-warm-taupe/70 hover:text-warm-taupe ${className ?? ''}`}
+      className={`relative flex items-center gap-1.5 text-xs font-semibold text-miyeon-main/70 hover:text-miyeon-main ${className ?? ''}`}
     >
       <Share2 className="h-4 w-4" />
       Share
       {copied && (
-        <span className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-warm-taupe px-2.5 py-1 text-[10px] font-semibold text-white shadow-md">
+        <span className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-miyeon-main px-2.5 py-1 text-[10px] font-semibold text-white shadow-md">
           Link copied
         </span>
       )}

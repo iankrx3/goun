@@ -4,13 +4,14 @@ export default {
   theme: {
     extend: {
       colors: {
-        'goun-rose': '#B98278',
-        'han-cream': '#E8D8D1',
-        'warm-taupe': '#76645D',
-        'goun-white': '#FFFFFF',
+        'miyeon-main': '#5A514D',
+        'miyeon-sub1': '#D49A9A',
+        'miyeon-sub2': '#F7E6E6',
+        'miyeon-neutral': '#F3EDE6',
+        'miyeon-base': '#FFFFFF',
       },
       fontFamily: {
-        display: ['"Bodoni Moda"', 'Bodoni', 'serif'],
+        display: ['Satoshi', 'Pretendard', 'sans-serif'],
         sans: ['Satoshi', 'Pretendard', 'sans-serif'],
       },
     },
