@@ -311,7 +311,7 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
   };
 
   return (
-    <div className="relative h-[calc(100vh-64px)] w-full overflow-hidden bg-miyeon-neutral/30">
+    <div className="relative h-[calc(100dvh-64px)] w-full overflow-hidden bg-miyeon-neutral/30">
       <div ref={mapContainerRef} className="h-full w-full z-0" />
 
       {loading && (
