@@ -1,9 +1,15 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
+import { Link } from 'react-router-dom';
 import { Locate, Loader2, Search, X, ChevronRight, Plus, Minus } from 'lucide-react';
 import type { BeautyCategory, CreatorPick, Place } from '../types';
 import { categoryMeta } from '../data/mock';
 import { fetchCreatorPicks, fetchPlaces } from '../services/places';
+
+// Only skin/face categories are live on the map for now — hair/nails/makeup
+// are still being built out. Remove this restriction (and the matching
+// entries in CATEGORY_FILTERS below) once those categories are ready.
+const ENABLED_MAP_CATEGORIES: BeautyCategory[] = ['skin', 'face'];
 
 // Adapted from extract/src/components/MapView.tsx (Sniffood map + login kit).
 // Same Leaflet/MapTiler setup and custom controls; filter modes and pin data
@@ -22,9 +28,6 @@ const CATEGORY_FILTERS: { id: 'all' | BeautyCategory; label: string }[] = [
   { id: 'all', label: 'All' },
   { id: 'skin', label: '✨ Skin' },
   { id: 'face', label: '💎 Face' },
-  { id: 'hair', label: '💇 Hair' },
-  { id: 'nails', label: '💅 Nails' },
-  { id: 'makeup', label: '💄 Makeup' },
 ];
 
 const PICK_FILTERS: { id: PickFilter; label: string }[] = [
@@ -62,8 +65,9 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
     setLoading(true);
     Promise.all([fetchPlaces(), fetchCreatorPicks().catch(() => [] as CreatorPick[])])
       .then(([placeList, picks]) => {
-        setPlaces(placeList);
-        setCreatorPicks(picks);
+        const enabledPlaces = placeList.filter((p) => ENABLED_MAP_CATEGORIES.includes(p.category));
+        setPlaces(enabledPlaces);
+        setCreatorPicks(picks.filter((pick) => ENABLED_MAP_CATEGORIES.includes(pick.place.category)));
       })
       .finally(() => setLoading(false));
   }, []);
@@ -398,9 +402,9 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
             </p>
             <div className="flex items-center gap-3 overflow-x-auto no-scrollbar py-1">
               {creatorPicks.map((pick) => (
-                <button
+                <Link
                   key={pick.id}
-                  onClick={() => handleJumpToPlace(pick.place)}
+                  to={`/curator/${pick.creator.id}`}
                   className="group flex shrink-0 flex-col items-center gap-1.5"
                 >
                   <img
@@ -412,7 +416,7 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
                   <span className="max-w-[70px] truncate text-[11px] font-medium text-miyeon-main">
                     @{pick.creator.username}
                   </span>
-                </button>
+                </Link>
               ))}
             </div>
           </div>

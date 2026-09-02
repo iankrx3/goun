@@ -9,6 +9,7 @@ import CommunityPage from './pages/CommunityPage';
 import PlaceDetailPage from './pages/PlaceDetailPage';
 import TreatmentDetailPage from './pages/TreatmentDetailPage';
 import PostDetailPage from './pages/PostDetailPage';
+import CuratorProfilePage from './pages/CuratorProfilePage';
 import type { AuthReturnTab } from './services/auth';
 
 export default function App() {
@@ -51,6 +52,7 @@ export default function App() {
         />
         <Route path="/place/:id" element={<PlaceDetailPage />} />
         <Route path="/treatment/:id" element={<TreatmentDetailPage />} />
+        <Route path="/curator/:id" element={<CuratorProfilePage />} />
       </Routes>
 
       <GoogleAuthModal

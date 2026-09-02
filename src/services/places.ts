@@ -114,6 +114,45 @@ export async function fetchCreatorByUserId(userId: string): Promise<Creator | nu
   }
 }
 
+export async function fetchCreatorById(id: string): Promise<Creator | null> {
+  if (!supabase) return mockCreators.find((creator) => creator.id === id) ?? null;
+  try {
+    const { data, error } = await supabase
+      .from('creators')
+      .select('*, creator_picks(id)')
+      .eq('id', id)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) return mockCreators.find((creator) => creator.id === id) ?? null;
+    return mapCreator(data, data.creator_picks?.length || 0);
+  } catch {
+    return mockCreators.find((creator) => creator.id === id) ?? null;
+  }
+}
+
+export async function fetchCreatorPicksByCreatorId(creatorId: string): Promise<CreatorPick[]> {
+  if (!supabase) return mockCreatorPicks.filter((pick) => pick.creator_id === creatorId);
+  try {
+    const { data, error } = await supabase
+      .from('creator_picks')
+      .select('*, creator:creators(*), place:places(*)')
+      .eq('creator_id', creatorId);
+    if (error) throw error;
+    if (!data || data.length === 0) return mockCreatorPicks.filter((pick) => pick.creator_id === creatorId);
+    return data.map((row: any) => ({
+      id: row.id,
+      creator_id: row.creator_id,
+      creator: mapCreator(row.creator),
+      place_id: row.place_id,
+      place: mapPlace(row.place),
+      personal_note: row.personal_note || '',
+      created_at: row.created_at,
+    }));
+  } catch {
+    return mockCreatorPicks.filter((pick) => pick.creator_id === creatorId);
+  }
+}
+
 export async function fetchCreatorPicks(): Promise<CreatorPick[]> {
   if (!supabase) return mockCreatorPicks;
   try {
