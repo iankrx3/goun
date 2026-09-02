@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { MatchResult } from '../types';
+import { withCreatripAffiliate, CREATRIP_BASE_URL } from '../lib/creatrip';
 
 interface ResultCardProps {
   result: MatchResult;
@@ -89,7 +90,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, rank, quote }) =
           </button>
         )}
         <a
-          href={treatment.creatripUrl || place.bookingUrl || 'https://www.creatrip.com/en'}
+          href={withCreatripAffiliate(treatment.creatripUrl || place.bookingUrl || CREATRIP_BASE_URL)}
           target="_blank"
           rel="noreferrer"
           className="flex-1 rounded-full bg-miyeon-sub1 px-4 py-2.5 text-center text-xs font-bold text-white shadow-sm shadow-miyeon-sub1/30"

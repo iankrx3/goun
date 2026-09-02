@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import type { Place, Treatment } from '../types';
 import { fetchPlaceById, fetchTreatmentById } from '../services/places';
+import { withCreatripAffiliate, CREATRIP_BASE_URL } from '../lib/creatrip';
 
 export default function TreatmentDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -65,7 +66,7 @@ export default function TreatmentDetailPage() {
       )}
 
       <a
-        href={treatment.creatripUrl || 'https://www.creatrip.com/en'}
+        href={withCreatripAffiliate(treatment.creatripUrl || CREATRIP_BASE_URL)}
         target="_blank"
         rel="noreferrer"
         className="block rounded-full bg-miyeon-sub1 py-3.5 text-center text-sm font-bold text-white shadow-sm shadow-miyeon-sub1/30"

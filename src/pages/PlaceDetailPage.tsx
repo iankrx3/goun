@@ -8,6 +8,7 @@ import { useSavedPlaces } from '../hooks/useSavedPlaces';
 import { MedicalTourismSection, NearbyWellnessSection } from '../components/badges/KtoBadges';
 import { GroundedInfo } from '../components/GroundedInfo';
 import { getDirectionsLinks } from '../lib/directions';
+import { withCreatripAffiliate, CREATRIP_BASE_URL } from '../lib/creatrip';
 
 export default function PlaceDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -136,7 +137,7 @@ export default function PlaceDetailPage() {
         )}
 
         <a
-          href={place.bookingUrl || 'https://www.creatrip.com/en'}
+          href={withCreatripAffiliate(place.bookingUrl || CREATRIP_BASE_URL)}
           target="_blank"
           rel="noreferrer"
           className="block rounded-full bg-miyeon-sub1 py-3.5 text-center text-sm font-bold text-white shadow-sm shadow-miyeon-sub1/30"

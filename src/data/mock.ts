@@ -31,7 +31,7 @@ export const mockPlaces: Place[] = [
     aiPick: true,
     creatorPick: true,
     communityPick: true,
-    bookingUrl: 'https://www.creatrip.com/en',
+    bookingUrl: 'https://creatrip.com/en',
     whyPeopleLikeIt: ['English-speaking staff', 'Fast recovery protocol', 'Consistent results for pigmentation'],
     nearbyWellness: [
       {
@@ -70,7 +70,7 @@ export const mockPlaces: Place[] = [
     language: ['English', 'Korean'],
     foreignerFriendly: true,
     aiPick: true,
-    bookingUrl: 'https://www.creatrip.com/en',
+    bookingUrl: 'https://creatrip.com/en',
     whyPeopleLikeIt: ['Natural-looking contouring', 'Detailed consultation'],
     medicalTourismMatch: {
       orgName: 'V-Line Face Clinic',
@@ -98,7 +98,7 @@ export const mockPlaces: Place[] = [
     foreignerFriendly: true,
     creatorPick: true,
     communityPick: true,
-    bookingUrl: 'https://www.creatrip.com/en',
+    bookingUrl: 'https://creatrip.com/en',
     whyPeopleLikeIt: ['Trend-driven stylists', 'Great for K-pop inspired looks'],
     nearbyWellness: [
       {
@@ -130,7 +130,7 @@ export const mockPlaces: Place[] = [
     language: ['English', 'Korean'],
     foreignerFriendly: true,
     communityPick: true,
-    bookingUrl: 'https://www.creatrip.com/en',
+    bookingUrl: 'https://creatrip.com/en',
     whyPeopleLikeIt: ['Clean, minimal designs', 'Walk-ins welcome'],
   },
   {
@@ -151,7 +151,7 @@ export const mockPlaces: Place[] = [
     foreignerFriendly: true,
     aiPick: true,
     creatorPick: true,
-    bookingUrl: 'https://www.creatrip.com/en',
+    bookingUrl: 'https://creatrip.com/en',
     whyPeopleLikeIt: ['Photoshoot-ready looks', 'Understands Western features well'],
   },
   {
@@ -170,7 +170,7 @@ export const mockPlaces: Place[] = [
     treatmentIds: ['t-pore-facial', 't-led-therapy'],
     language: ['English', 'Korean'],
     foreignerFriendly: true,
-    bookingUrl: 'https://www.creatrip.com/en',
+    bookingUrl: 'https://creatrip.com/en',
     whyPeopleLikeIt: ['Budget-friendly', 'Good for first-timers'],
   },
 ];
@@ -194,7 +194,7 @@ export const mockTreatments: Treatment[] = [
     reviewCount: 312,
     rating: 4.8,
     creatripAvailable: true,
-    creatripUrl: 'https://www.creatrip.com/en',
+    creatripUrl: 'https://creatrip.com/en',
   },
   {
     id: 't-pore-facial',
@@ -214,7 +214,7 @@ export const mockTreatments: Treatment[] = [
     reviewCount: 143,
     rating: 4.5,
     creatripAvailable: true,
-    creatripUrl: 'https://www.creatrip.com/en',
+    creatripUrl: 'https://creatrip.com/en',
   },
   {
     id: 't-ultherapy',
@@ -234,7 +234,7 @@ export const mockTreatments: Treatment[] = [
     reviewCount: 198,
     rating: 4.7,
     creatripAvailable: true,
-    creatripUrl: 'https://www.creatrip.com/en',
+    creatripUrl: 'https://creatrip.com/en',
   },
   {
     id: 't-kidol-perm',
@@ -254,7 +254,7 @@ export const mockTreatments: Treatment[] = [
     reviewCount: 421,
     rating: 4.9,
     creatripAvailable: true,
-    creatripUrl: 'https://www.creatrip.com/en',
+    creatripUrl: 'https://creatrip.com/en',
   },
   {
     id: 't-minimal-gel',
@@ -274,7 +274,7 @@ export const mockTreatments: Treatment[] = [
     reviewCount: 265,
     rating: 4.6,
     creatripAvailable: true,
-    creatripUrl: 'https://www.creatrip.com/en',
+    creatripUrl: 'https://creatrip.com/en',
   },
   {
     id: 't-korean-glam',
@@ -294,7 +294,7 @@ export const mockTreatments: Treatment[] = [
     reviewCount: 176,
     rating: 4.8,
     creatripAvailable: true,
-    creatripUrl: 'https://www.creatrip.com/en',
+    creatripUrl: 'https://creatrip.com/en',
   },
   {
     id: 't-skin-booster',
@@ -314,7 +314,7 @@ export const mockTreatments: Treatment[] = [
     reviewCount: 88,
     rating: 4.7,
     creatripAvailable: true,
-    creatripUrl: 'https://www.creatrip.com/en',
+    creatripUrl: 'https://creatrip.com/en',
   },
   {
     id: 't-led-therapy',
@@ -334,7 +334,7 @@ export const mockTreatments: Treatment[] = [
     reviewCount: 54,
     rating: 4.4,
     creatripAvailable: true,
-    creatripUrl: 'https://www.creatrip.com/en',
+    creatripUrl: 'https://creatrip.com/en',
   },
   {
     id: 't-vline-filler',
@@ -354,7 +354,7 @@ export const mockTreatments: Treatment[] = [
     reviewCount: 121,
     rating: 4.6,
     creatripAvailable: true,
-    creatripUrl: 'https://www.creatrip.com/en',
+    creatripUrl: 'https://creatrip.com/en',
   },
 ];
 

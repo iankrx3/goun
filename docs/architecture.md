@@ -36,7 +36,7 @@ Vite + React SPA. 서버는 Vite 개발/프리뷰 프록시뿐이고, 나머지 
 - `/map` 장소 핀 · 필터 · 검색
 - `/community` 읽기 전용 피드
 - `/place/:id` 장소 상세 (웰니스 · 의료관광 배지, 저장)
-- `/treatment/:id` 시술 상세 · Creatrip 링크
+- `/treatment/:id` 시술 상세 · Creatrip 제휴 링크
 
 로그인 여부로 라우트를 막지 않는다. 저장은 로그인 없이도 `localStorage`에 남는다.
 
@@ -162,7 +162,7 @@ LLM은 없다. `match.ts`가 투명한 클라이언트 스코러다.
 - 경로찾기 링크 (Google/Naver/Kakao Maps, `lib/directions.ts`) — 좌표 + `googlePlaceId` 기반, 새 탭
 - `NearbyWellnessSection` · `MedicalTourismSection` (`components/badges/KtoBadges.tsx`) — 데이터 없으면 안 그림 (fail-silent)
 - `GroundedInfo` (`components/GroundedInfo.tsx`) — "Get latest info" 버튼. 클릭 시에만 `services/gemini.ts` → `/api/gemini/ground` 호출, Google Search grounding으로 KTO/Places에 없는 최신 정보(영업시간 변경, 휴업 등) 요약 + 출처 링크. `GEMINI_API_KEY` 없으면 버튼 자체가 안 보임 (fail-silent)
-- Save to My Map, Creatrip(또는 Google website)
+- Save to My Map, Creatrip 제휴 링크(또는 Google website) — `lib/creatrip.ts`가 `utm_source`/`aff_id` 쿼리 파라미터를 자동으로 붙임
 
 **시술 상세** (`TreatmentDetailPage.tsx`) — 가격대, 다운타임, 강도, 연결된 장소.
 
@@ -201,7 +201,7 @@ LLM은 없다. `match.ts`가 투명한 클라이언트 스코러다.
 | 웰니스 핀 | Map, Place detail | — | mock `nearbyWellness` | (미연동) |
 | 저장 | 상세/맵 버튼 | `useSavedPlaces` | — | `localStorage` |
 | 커뮤니티 | CommunityPage | — | — | mock |
-| 예약 CTA | Result / Place / Treatment | — | `bookingUrl` / Creatrip | 외부 링크 |
+| 예약 CTA | Result / Place / Treatment | — | `bookingUrl` / `lib/creatrip.ts` | 외부 링크(제휴) |
 
 ---
 

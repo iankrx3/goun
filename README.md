@@ -67,6 +67,9 @@ quota on data.go.kr is 1,000 calls/day — results are cached for 10 minutes.
   Google/Naver/Kakao Maps (`src/lib/directions.ts`), and an opt-in "Get latest
   info" lookup backed by Gemini + Google Search grounding
   (`src/components/GroundedInfo.tsx`) for anything Places/KTO don't cover.
+  Book-with-Creatrip links (`ResultCard`, `PlaceDetailPage`, `TreatmentDetailPage`)
+  are tagged with the Creatrip affiliate ID via `src/lib/creatrip.ts`
+  (`utm_source`/`aff_id` query params).
 - **Community** — read-only feed (Post/Like/Comment are "MVP 이후" per §5).
 - **My Map** (`src/hooks/useSavedPlaces.ts`) — save/unsave, stored in
   `localStorage` for now (no `saved_places` table yet).
