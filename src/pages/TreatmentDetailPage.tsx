@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import type { Place, Treatment } from '../types';
 import { fetchPlaceById, fetchTreatmentById } from '../services/places';
-import { withCreatripAffiliate, CREATRIP_BASE_URL } from '../lib/creatrip';
+import { withCreatripAffiliate, CREATRIP_BASE_URL, CREATRIP_DISCLOSURE } from '../lib/creatrip';
 
 export default function TreatmentDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -65,14 +65,17 @@ export default function TreatmentDetailPage() {
         </Link>
       )}
 
-      <a
-        href={withCreatripAffiliate(treatment.creatripUrl || CREATRIP_BASE_URL)}
-        target="_blank"
-        rel="noreferrer"
-        className="block rounded-full bg-miyeon-sub1 py-3.5 text-center text-sm font-bold text-white shadow-sm shadow-miyeon-sub1/30"
-      >
-        BOOK WITH CREATRIP →
-      </a>
+      <div className="space-y-1.5">
+        <a
+          href={withCreatripAffiliate(treatment.creatripUrl || CREATRIP_BASE_URL)}
+          target="_blank"
+          rel="noreferrer"
+          className="block rounded-full bg-miyeon-sub1 py-3.5 text-center text-sm font-bold text-white shadow-sm shadow-miyeon-sub1/30"
+        >
+          BOOK WITH CREATRIP →
+        </a>
+        <p className="text-center text-[10px] text-miyeon-main/40">{CREATRIP_DISCLOSURE}</p>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import { NavHeader } from './components/NavHeader';
+import { BottomNav } from './components/BottomNav';
 import { GoogleAuthModal } from './components/GoogleAuthModal';
 import { useAuth } from './hooks/useAuth';
 import ExplorePage from './pages/ExplorePage';
@@ -21,7 +22,8 @@ export default function App() {
     if (returnTab) setIsAuthOpen(false);
   }, [returnTab]);
 
-  const authReturnTab: AuthReturnTab = location.pathname.startsWith('/map')
+  const isMapRoute = location.pathname.startsWith('/map');
+  const authReturnTab: AuthReturnTab = isMapRoute
     ? 'map'
     : location.pathname.startsWith('/community')
       ? 'community'
@@ -39,21 +41,25 @@ export default function App() {
     <div className="min-h-screen bg-white text-miyeon-main">
       <NavHeader session={session} onSignIn={() => setIsAuthOpen(true)} onSignOut={signOut} />
 
-      <Routes>
-        <Route path="/" element={<ExplorePage />} />
-        <Route path="/map" element={<MapPage />} />
-        <Route
-          path="/community"
-          element={<CommunityPage session={session} onSignIn={() => setIsAuthOpen(true)} />}
-        />
-        <Route
-          path="/community/:id"
-          element={<PostDetailPage session={session} onSignIn={() => setIsAuthOpen(true)} />}
-        />
-        <Route path="/place/:id" element={<PlaceDetailPage />} />
-        <Route path="/treatment/:id" element={<TreatmentDetailPage />} />
-        <Route path="/curator/:id" element={<CuratorProfilePage />} />
-      </Routes>
+      <main className={isMapRoute ? '' : 'pb-16 sm:pb-0'}>
+        <Routes>
+          <Route path="/" element={<ExplorePage />} />
+          <Route path="/map" element={<MapPage />} />
+          <Route
+            path="/community"
+            element={<CommunityPage session={session} onSignIn={() => setIsAuthOpen(true)} />}
+          />
+          <Route
+            path="/community/:id"
+            element={<PostDetailPage session={session} onSignIn={() => setIsAuthOpen(true)} />}
+          />
+          <Route path="/place/:id" element={<PlaceDetailPage />} />
+          <Route path="/treatment/:id" element={<TreatmentDetailPage />} />
+          <Route path="/curator/:id" element={<CuratorProfilePage />} />
+        </Routes>
+      </main>
+
+      <BottomNav />
 
       <GoogleAuthModal
         isOpen={isAuthOpen}

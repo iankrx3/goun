@@ -9,7 +9,7 @@ interface PairChoiceProps {
 
 // §2-3 — "A vs B" vibe pair, three per screen.
 export const PairChoice: React.FC<PairChoiceProps> = ({ pair, value, onChange }) => (
-  <div className="grid grid-cols-2 gap-2">
+  <div className="relative grid grid-cols-2 gap-2">
     {[pair.a, pair.b].map((option) => (
       <button
         key={option}
@@ -23,5 +23,8 @@ export const PairChoice: React.FC<PairChoiceProps> = ({ pair, value, onChange })
         {option}
       </button>
     ))}
+    <span className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-miyeon-neutral bg-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-miyeon-main/50 shadow-sm">
+      OR
+    </span>
   </div>
 );

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { MatchResult } from '../types';
-import { withCreatripAffiliate, CREATRIP_BASE_URL } from '../lib/creatrip';
+import { withCreatripAffiliate, CREATRIP_BASE_URL, CREATRIP_DISCLOSURE } from '../lib/creatrip';
 
 interface ResultCardProps {
   result: MatchResult;
@@ -98,6 +98,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, rank, quote }) =
           CHECK AVAILABILITY →
         </a>
       </div>
+      <p className="mt-1.5 text-center text-[10px] text-miyeon-main/40">{CREATRIP_DISCLOSURE}</p>
     </div>
   );
 };

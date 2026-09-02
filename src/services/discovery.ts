@@ -372,6 +372,59 @@ export async function discoverPlaces(query: DiscoverQuery): Promise<DiscoveryRes
   return result;
 }
 
+/**
+ * Live, as-you-type search (Map tab search box): finds real Google Places
+ * matching free text, constrained to the given categories' place types so
+ * e.g. a hair salon can't surface while searching the skin/face-only map.
+ * Unlike discoverPlaces(), this skips the "nearby" leg (irrelevant for a
+ * specific text query) and KTO merging (keeps it fast for type-ahead).
+ */
+export async function searchPlacesByCategory(
+  categories: BeautyCategory[],
+  query: string,
+  origin?: { lat: number; lng: number }
+): Promise<Place[]> {
+  const trimmed = query.trim();
+  if (!trimmed) return [];
+
+  const health = await getApiHealth();
+  if (!health.google) return [];
+
+  const resolvedOrigin = resolveOrigin(origin);
+
+  const perCategory = await Promise.all(
+    categories.map(async (category) => {
+      const spec = categorySearch[category];
+      try {
+        const hits = await searchText({
+          textQuery: `${trimmed} Seoul`,
+          includedType: spec.googleTypes[0],
+          origin: resolvedOrigin,
+          maxResultCount: 8,
+        });
+        return hits.map((hit) => toPlaceFromGoogle(hit, category));
+      } catch (err) {
+        console.warn(`searchPlacesByCategory(${category}) failed`, err);
+        return [] as Place[];
+      }
+    })
+  );
+
+  const seen = new Set<string>();
+  const merged: Place[] = [];
+  for (const place of perCategory.flat()) {
+    if (seen.has(place.id)) continue;
+    seen.add(place.id);
+    merged.push(place);
+  }
+
+  // So a later fetchPlaceById(id) (e.g. clicking through to /place/:id) can
+  // resolve these — same pattern discoverPlaces() uses for its results.
+  rememberDiscovery({ places: merged, treatments: merged.map((place) => treatmentForPlace(place)) });
+
+  return merged;
+}
+
 const ALL_CATEGORIES: BeautyCategory[] = ['skin', 'face', 'hair', 'nails', 'makeup'];
 
 export async function discoverAll(origin?: { lat: number; lng: number }): Promise<DiscoveryResult> {

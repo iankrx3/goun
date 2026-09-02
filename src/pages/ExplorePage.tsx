@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
-import type { BeautyCategory, MatchResult, QuizAnswers } from '../types';
+import type { BeautyCategory, MatchResult, Place, QuizAnswers } from '../types';
 import { categoryMeta } from '../data/mock';
 import { budgetOptions, downtimeOptions, tripLengthOptions, vibePairs, whatOptions } from '../data/quiz';
 import { ModeSelect } from '../components/quiz/ModeSelect';
@@ -10,7 +11,10 @@ import { AITransition } from '../components/quiz/AITransition';
 import { ResultCard } from '../components/ResultCard';
 import { ProductCommerce } from '../components/ProductCommerce';
 import { EmailCaptureCard } from '../components/EmailCaptureCard';
-import { getMatches } from '../services/match';
+import { SponsoredPlaceCard } from '../components/SponsoredPlaceCard';
+import { getMatches, placesForCategory } from '../services/match';
+import { fetchPlaces } from '../services/places';
+import { hasCreatripListing } from '../lib/creatrip';
 import { buildPickQuote } from '../lib/pickCopy';
 
 type Step = 'home' | 'category' | 'area' | 'what' | 'vibe' | 'constraints' | 'transition' | 'results';
@@ -28,9 +32,11 @@ const emptyAnswers: QuizAnswers = {
 };
 
 export default function ExplorePage() {
+  const navigate = useNavigate();
   const [step, setStep] = useState<Step>('home');
   const [answers, setAnswers] = useState<QuizAnswers>(emptyAnswers);
   const [results, setResults] = useState<MatchResult[]>([]);
+  const [sponsoredPlace, setSponsoredPlace] = useState<Place | null>(null);
 
   const selectCategory = (category: BeautyCategory) => {
     setAnswers({ ...emptyAnswers, category });
@@ -64,12 +70,21 @@ export default function ExplorePage() {
   const handleTransitionDone = async () => {
     const matches = await getMatches(answers);
     setResults(matches);
+
+    const matchedPlaceIds = new Set(matches.map((m) => m.place.id));
+    const allPlaces = await fetchPlaces();
+    const sponsored = placesForCategory(allPlaces, answers.category)
+      .filter((p) => hasCreatripListing(p) && !matchedPlaceIds.has(p.id))
+      .sort((a, b) => b.rating - a.rating)[0];
+    setSponsoredPlace(sponsored ?? null);
+
     setStep('results');
   };
 
   const restart = () => {
     setAnswers(emptyAnswers);
     setResults([]);
+    setSponsoredPlace(null);
     setStep('home');
   };
 
@@ -169,7 +184,7 @@ export default function ExplorePage() {
           onNext={() => setStep('constraints')}
           nextDisabled={answers.vibes.filter(Boolean).length < vibePairs[answers.category].length}
         >
-          <div className="space-y-4">
+          <div className="space-y-5">
             {vibePairs[answers.category].map((pair, i) => (
               <PairChoice key={i} pair={pair} value={answers.vibes[i]} onChange={(v) => setVibe(i, v)} />
             ))}
@@ -240,6 +255,9 @@ export default function ExplorePage() {
             </p>
           ) : (
             <>
+              {sponsoredPlace && (
+                <SponsoredPlaceCard place={sponsoredPlace} onView={(p) => navigate(`/place/${p.id}`)} />
+              )}
               <div className="space-y-4">
                 {results.map((r, i) => (
                   <ResultCard

@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "resolve:creatrip": "node --env-file=.env.local scripts/resolve-creatrip-links.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",

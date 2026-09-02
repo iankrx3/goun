@@ -4,12 +4,9 @@ import { Link } from 'react-router-dom';
 import { Locate, Loader2, Search, X, ChevronRight, Plus, Minus } from 'lucide-react';
 import type { BeautyCategory, CreatorPick, Place } from '../types';
 import { categoryMeta } from '../data/mock';
+import { ENABLED_MAP_CATEGORIES } from '../data/mapCategories';
 import { fetchCreatorPicks, fetchPlaces } from '../services/places';
-
-// Only skin/face categories are live on the map for now — hair/nails/makeup
-// are still being built out. Remove this restriction (and the matching
-// entries in CATEGORY_FILTERS below) once those categories are ready.
-const ENABLED_MAP_CATEGORIES: BeautyCategory[] = ['skin', 'face'];
+import { searchPlacesByCategory } from '../services/discovery';
 
 // Adapted from extract/src/components/MapView.tsx (Sniffood map + login kit).
 // Same Leaflet/MapTiler setup and custom controls; filter modes and pin data
@@ -56,6 +53,7 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Place[]>([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isSearchLoading, setIsSearchLoading] = useState(false);
 
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isLocating, setIsLocating] = useState(false);
@@ -201,22 +199,45 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
   useEffect(() => {
     if (!searchQuery.trim()) {
       setSearchResults([]);
+      setIsSearchLoading(false);
       return;
     }
     const q = searchQuery.toLowerCase();
-    const timer = setTimeout(() => {
-      setSearchResults(
-        places
-          .filter((p) => p.name.toLowerCase().includes(q) || p.area.toLowerCase().includes(q))
-          .slice(0, 6)
-      );
-    }, 250);
-    return () => clearTimeout(timer);
-  }, [searchQuery, places]);
+    const localMatches = places.filter(
+      (p) => p.name.toLowerCase().includes(q) || p.area.toLowerCase().includes(q)
+    );
+    // Show local matches immediately, then layer in live Google results once they land.
+    setSearchResults(localMatches.slice(0, 8));
+
+    let cancelled = false;
+    setIsSearchLoading(true);
+    const timer = setTimeout(async () => {
+      try {
+        const liveMatches = await searchPlacesByCategory(ENABLED_MAP_CATEGORIES, searchQuery, userLocation ?? undefined);
+        if (cancelled) return;
+        const seen = new Set(localMatches.map((p) => p.id));
+        const combined = [...localMatches, ...liveMatches.filter((p) => !seen.has(p.id))];
+        setSearchResults(combined.slice(0, 8));
+      } catch {
+        // fail-silent — local matches (already shown) are still valid
+      } finally {
+        if (!cancelled) setIsSearchLoading(false);
+      }
+    }, 350);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [searchQuery, places, userLocation]);
 
   const handleJumpToPlace = (place: Place) => {
     const map = mapInstanceRef.current;
     if (!map) return;
+    // Live Google results aren't in `places` (and so have no marker) until we add them.
+    setPlaces((prev) => (prev.some((p) => p.id === place.id) ? prev : [...prev, place]));
+    // Clear the category filter so the target place's pin is guaranteed to be visible.
+    setSelectedCategory('all');
     setSearchQuery('');
     setIsSearchOpen(false);
     map.flyTo([place.latitude, place.longitude], 16, { animate: true, duration: 1 });
@@ -293,12 +314,12 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
       )}
 
       {locationError && (
-        <div className="absolute bottom-5 left-1/2 z-30 -translate-x-1/2 whitespace-nowrap rounded-full bg-miyeon-main/90 px-4 py-2 text-xs font-medium text-white shadow-xl backdrop-blur-md">
+        <div className="absolute bottom-[84px] left-1/2 z-30 -translate-x-1/2 whitespace-nowrap rounded-full bg-miyeon-main/90 px-4 py-2 text-xs font-medium text-white shadow-xl backdrop-blur-md sm:bottom-5">
           ⚠️ {locationError}
         </div>
       )}
 
-      <div className="absolute right-3 bottom-5 z-10 flex flex-col gap-2">
+      <div className="absolute right-3 bottom-[84px] z-10 flex flex-col gap-2 sm:bottom-5">
         <MapButton onClick={() => mapInstanceRef.current?.zoomIn()} label="Zoom In">
           <Plus className="h-4 w-4" />
         </MapButton>
@@ -325,6 +346,7 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
               onFocus={() => setIsSearchOpen(true)}
               className="flex-1 bg-transparent text-xs text-miyeon-main placeholder-miyeon-main/40 focus:outline-none"
             />
+            {isSearchLoading && <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-miyeon-main/40" />}
             {searchQuery && (
               <button onClick={() => { setSearchQuery(''); setIsSearchOpen(false); }} className="text-miyeon-main/50">
                 <X className="h-3.5 w-3.5" />

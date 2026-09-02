@@ -1,21 +1,32 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bookmark, Star, X } from 'lucide-react';
+import { Bookmark, List, Map as MapIcon, Star, X } from 'lucide-react';
 import { MapView } from '../components/MapView';
+import { PlaceListView } from '../components/PlaceListView';
 import { useSavedPlaces } from '../hooks/useSavedPlaces';
 import type { Place } from '../types';
 
 export default function MapPage() {
   const navigate = useNavigate();
+  const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const { isSaved, toggleSave } = useSavedPlaces();
 
   return (
     <div className="relative">
-      <MapView onSelectPlace={setSelectedPlace} />
+      {viewMode === 'map' ? <MapView onSelectPlace={setSelectedPlace} /> : <PlaceListView />}
 
-      {selectedPlace && (
-        <div className="absolute bottom-4 left-1/2 z-30 w-[min(92vw,420px)] -translate-x-1/2 rounded-2xl border border-miyeon-neutral bg-white p-4 shadow-2xl">
+      <button
+        onClick={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
+        aria-label={viewMode === 'map' ? 'Switch to list view' : 'Switch to map view'}
+        title={viewMode === 'map' ? 'Switch to list view' : 'Switch to map view'}
+        className="absolute left-3 bottom-[84px] z-20 flex h-10 w-10 items-center justify-center rounded-xl bg-white text-miyeon-main shadow-lg border border-black/5 transition-all hover:scale-105 active:scale-95 hover:text-miyeon-sub1 sm:bottom-5"
+      >
+        {viewMode === 'map' ? <List className="h-4 w-4" /> : <MapIcon className="h-4 w-4" />}
+      </button>
+
+      {viewMode === 'map' && selectedPlace && (
+        <div className="absolute bottom-[80px] left-1/2 z-30 w-[min(92vw,420px)] -translate-x-1/2 rounded-2xl border border-miyeon-neutral bg-white p-4 shadow-2xl sm:bottom-4">
           <button
             onClick={() => setSelectedPlace(null)}
             className="absolute right-3 top-3 text-miyeon-main/40 hover:text-miyeon-main"

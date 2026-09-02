@@ -52,41 +52,76 @@ quota on data.go.kr is 1,000 calls/day — results are cached for 10 minutes.
 ## What's implemented
 
 - **Explore** (`src/pages/ExplorePage.tsx`) — Home → WHAT → VIBE → Constraints →
-  AI transition → Top 3 matches, per PRD §2.
+  AI transition → Top 3 matches, per PRD §2. The VIBE pair-choice screen shows
+  an "OR" badge between each pair so it reads as a binary choice, not a grid.
 - **Map** (`src/pages/MapPage.tsx`, `src/components/MapView.tsx`) — ported from
-  `extract/src/components/MapView.tsx`; category/pick filters, search, geolocation,
-  and a Warm-Taupe KTO Wellness pin layer per §15.3.
+  `extract/src/components/MapView.tsx`; category/pick filters, search,
+  geolocation, and a Warm-Taupe KTO Wellness pin layer per §15.3. Only
+  `skin`/`face` categories are shown for now (`src/data/mapCategories.ts`) —
+  hair/nails/makeup are still being built out. Search combines the already-loaded
+  local places with a live, debounced Google Places text search constrained to
+  `skin`/`face` place types (`services/discovery.ts#searchPlacesByCategory`), so
+  typing a real business name finds it even if it isn't in the loaded set;
+  picking a live result drops a new pin on the map. A map/list toggle
+  (bottom-left) switches to `components/PlaceListView.tsx`, a scrollable,
+  rating-sorted list of the same places.
 - **Login** (`src/hooks/useAuth.ts`, `src/services/auth.ts`,
   `src/components/GoogleAuthModal.tsx`) — Google OAuth when Supabase is
   configured, plus a local **Continue as demo** session that does not need keys.
 - **Place discovery** (`src/services/discovery.ts`) — category engine over
   Google Places API (New) + KTO `MdclTursmService`. Vite proxy in
-  `plugins/goun-api-proxy.ts` hides the keys and avoids browser CORS.
+  `plugins/miyeon-api-proxy.ts` hides the keys and avoids browser CORS.
 - **Place / Treatment detail** — Nearby Wellness and Medical Info KTO badges
   (§7.2/§7.3), fail-silent when their data is absent. Get-directions links to
   Google/Naver/Kakao Maps (`src/lib/directions.ts`), and an opt-in "Get latest
   info" lookup backed by Gemini + Google Search grounding
   (`src/components/GroundedInfo.tsx`) for anything Places/KTO don't cover.
-  Book-with-Creatrip links (`ResultCard`, `PlaceDetailPage`, `TreatmentDetailPage`)
-  are tagged with the Creatrip affiliate ID via `src/lib/creatrip.ts`
-  (`utm_source`/`aff_id` query params).
-- **Community** — read-only feed (Post/Like/Comment are "MVP 이후" per §5).
+- **Creatrip affiliate links** (`src/lib/creatrip.ts`) — Book-with-Creatrip CTAs
+  (`ResultCard`, `PlaceDetailPage`, `TreatmentDetailPage`) are tagged with the
+  Creatrip affiliate ID (`utm_source`/`aff_id` query params) and show a short
+  commission-disclosure caption underneath, per Creatrip's affiliate policy.
+  `hasCreatripListing()` tells apart a place with a real, spot-specific Creatrip
+  page from one still pointing at the generic homepage; only the former is
+  labeled "광고" (ad) — with one shown as a featured "광고 · 추천" pick — in the
+  Map list view and on the Explore results screen (separate from, and never
+  reordering, the 3 matched results). `scripts/resolve-creatrip-links.mjs`
+  (`npm run resolve:creatrip`) is a one-off, read-only tool that asks Gemini
+  (Google Search grounding) to find each demo place's real Creatrip page and
+  reports whether the answer is corroborated by an actual search result —
+  verified results are applied to `src/data/mock.ts` by hand, never
+  auto-written.
+- **Curator profiles** (`src/pages/CuratorProfilePage.tsx`, route
+  `/curator/:id`) — a curator's bio, socials, and the full list of places they've
+  curated (`services/places.ts#fetchCreatorById` /
+  `#fetchCreatorPicksByCreatorId`). Reached by tapping a creator's avatar in the
+  Map tab's "Curated by Creators" strip.
+- **Community** (`src/services/community.ts`) — read/write feed backed by
+  Supabase when configured, falling back to `localStorage` otherwise: create
+  post, like/unlike, comment, and delete your own post/comment. Follow is not
+  built.
 - **My Map** (`src/hooks/useSavedPlaces.ts`) — save/unsave, stored in
   `localStorage` for now (no `saved_places` table yet).
 - **AI matching** (`src/services/match.ts`) — a transparent client-side scorer
   implementing the §9 fit formula, standing in for the real LLM ranking engine
   in §13 until one exists.
+- **Mobile bottom nav** (`src/components/BottomNav.tsx`) — below the `sm`
+  breakpoint, the top tab bar (`NavHeader`) hides and a thumb-reachable bottom
+  tab bar takes over; desktop keeps the top nav.
 - Brand design tokens (Soft Cocoa / Dusty Rose / Soft Blush / Warm Beige / White) and
 Satoshi / Pretendard typography, from the Miyeon brand board.
 
 ## Known gaps vs. the PRD
 
-- Creator profile pages, Creator Map, and Community write actions (post/like/
-  follow) are not built — out of MVP scope per §11.
+- Community **follow** is not built (post/like/comment/delete all are).
+- `hair`/`nails`/`makeup` are modeled end-to-end (types, quiz, discovery) but
+  hidden from the Map tab until their UX is finished — see
+  `src/data/mapCategories.ts`.
 - Treatment/Place data is live when `KTO_SERVICE_KEY` / `GOOGLE_PLACES_API_KEY`
   are set, otherwise the bundled demo set in `src/data/mock.ts`. Wire
   `src/services/places.ts` to actual `places`/`treatments`/`creators`/
-  `creator_picks` tables when they exist.
+  `creator_picks` tables when they exist — there's no SQL schema file for
+  those tables in this repo yet (`supabase/` only has `community_schema.sql`
+  and `leads_schema.sql`).
 - Nearby Wellness (`WellnessTursmService`) is still mock-only; medical-tourism
   badges on live `skin`/`face` places come from `MdclTursmService`.
 - No nightly batch job. Discovery is on-demand with a 10-minute in-memory cache.

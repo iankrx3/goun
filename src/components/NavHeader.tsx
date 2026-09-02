@@ -23,7 +23,7 @@ export const NavHeader: React.FC<NavHeaderProps> = ({ session, onSignIn, onSignO
         <Sparkles className="h-4 w-4 text-miyeon-sub1" />
       </NavLink>
 
-      <nav className="flex items-center gap-1 rounded-full bg-miyeon-neutral/50 p-1">
+      <nav className="hidden items-center gap-1 rounded-full bg-miyeon-neutral/50 p-1 sm:flex">
         {tabs.map((tab) => (
           <NavLink
             key={tab.to}
