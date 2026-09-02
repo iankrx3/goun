@@ -34,7 +34,7 @@ export default function PlaceDetailPage() {
   if (!place) return <div className="px-4 py-10 text-sm text-miyeon-main/60">Place not found.</div>;
 
   return (
-    <div className="mx-auto max-w-2xl pb-16">
+    <div className="mx-auto max-w-2xl pb-[var(--bottom-nav-h)] sm:pb-0">
       <img src={place.photoUrl} alt={place.name} className="h-64 w-full object-cover sm:h-80" />
 
       <div className="space-y-6 px-4 py-6">

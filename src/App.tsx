@@ -41,7 +41,7 @@ export default function App() {
     <div className="min-h-screen bg-white text-miyeon-main">
       <NavHeader session={session} onSignIn={() => setIsAuthOpen(true)} onSignOut={signOut} />
 
-      <main className={isMapRoute ? '' : 'pb-16 sm:pb-0'}>
+      <main className={isMapRoute ? '' : 'pb-[var(--bottom-nav-h)] sm:pb-0'}>
         <Routes>
           <Route path="/" element={<ExplorePage />} />
           <Route path="/map" element={<MapPage />} />

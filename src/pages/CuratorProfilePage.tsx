@@ -29,7 +29,7 @@ export default function CuratorProfilePage() {
   if (!creator) return <div className="px-4 py-10 text-sm text-miyeon-main/60">Curator not found.</div>;
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-6 pb-16">
+    <div className="mx-auto max-w-2xl px-4 py-6 pb-[var(--bottom-nav-h)] sm:pb-6">
       <button
         onClick={() => navigate(-1)}
         className="flex items-center gap-1 text-xs font-semibold text-miyeon-main/60"
