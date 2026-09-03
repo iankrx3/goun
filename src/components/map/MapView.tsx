@@ -412,9 +412,9 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
               onFocus={() => setIsSearchOpen(true)}
               className="flex-1 bg-transparent text-xs text-miyeon-main placeholder-miyeon-main/40 focus:outline-none"
             />
-            {isSearchLoading && <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-miyeon-main/40" />}
+            {isSearchLoading && <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-miyeon-main/60" />}
             {searchQuery && (
-              <button onClick={() => { setSearchQuery(''); setIsSearchOpen(false); }} className="text-miyeon-main/50">
+              <button onClick={() => { setSearchQuery(''); setIsSearchOpen(false); }} className="text-miyeon-main/70">
                 <X className="h-3.5 w-3.5" />
               </button>
             )}
@@ -433,7 +433,7 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
                     <p className="truncate text-xs font-semibold text-miyeon-main">{p.name}</p>
                     <p className="text-[10px] text-miyeon-main/60">{p.area} · ★{p.rating}</p>
                   </div>
-                  <ChevronRight className="h-3.5 w-3.5 shrink-0 text-miyeon-main/40" />
+                  <ChevronRight className="h-3.5 w-3.5 shrink-0 text-miyeon-main/60" />
                 </button>
               ))}
             </div>
@@ -457,7 +457,7 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
                       Profile
                     </Link>
                   )}
-                  <button onClick={() => setSearchParams({})} aria-label="Clear filter" className="text-miyeon-main/50">
+                  <button onClick={() => setSearchParams({})} aria-label="Clear filter" className="text-miyeon-main/70">
                     <X className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -516,7 +516,7 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
                 Curated by Creators
               </p>
               <ChevronDown
-                className={`h-3.5 w-3.5 shrink-0 text-miyeon-main/50 transition-transform ${
+                className={`h-3.5 w-3.5 shrink-0 text-miyeon-main/70 transition-transform ${
                   isCreatorPicksExpanded ? 'rotate-180' : ''
                 }`}
               />

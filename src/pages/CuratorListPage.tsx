@@ -64,7 +64,7 @@ export default function CuratorListPage({ session }: CuratorListPageProps) {
       <div>
         <h1 className="font-display text-2xl text-miyeon-main">{list.title}</h1>
         {list.description && <p className="mt-1 text-sm text-miyeon-main/70">{list.description}</p>}
-        <p className="mt-1 text-xs font-semibold text-miyeon-main/50">
+        <p className="mt-1 text-xs font-semibold text-miyeon-main/70">
           {list.spot_count} spot{list.spot_count === 1 ? '' : 's'}
         </p>
       </div>
@@ -106,7 +106,7 @@ export default function CuratorListPage({ session }: CuratorListPageProps) {
             onChange={(e) => setNote(e.target.value)}
             placeholder="Add a personal note (optional)…"
             rows={2}
-            className="w-full resize-none rounded-xl border border-miyeon-neutral bg-white px-3 py-2 text-sm text-miyeon-main placeholder:text-miyeon-main/40 focus:outline-none"
+            className="w-full resize-none rounded-xl border border-miyeon-neutral bg-white px-3 py-2 text-sm text-miyeon-main placeholder:text-miyeon-main/60 focus:outline-none"
           />
           <div className="flex gap-2">
             <button onClick={confirmAddSpot} className="rounded-full bg-miyeon-sub1 px-4 py-1.5 text-xs font-bold text-white">

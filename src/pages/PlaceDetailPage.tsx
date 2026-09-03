@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { motion } from 'motion/react';
 import { Bookmark, ChevronLeft, Navigation, Star } from 'lucide-react';
 import type { CommunityPost, Place, Treatment } from '../types';
 import { fetchPlaceById, fetchTreatments } from '../services/places';
@@ -35,7 +36,14 @@ export default function PlaceDetailPage() {
 
   return (
     <div className="mx-auto max-w-2xl pb-[var(--bottom-nav-h)] sm:pb-0">
-      <img src={place.photoUrl} alt={place.name} className="h-64 w-full object-cover sm:h-80" />
+      <motion.img
+        initial={{ opacity: 0, scale: 1.05 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        src={place.photoUrl}
+        alt={place.name}
+        className="h-64 w-full object-cover sm:h-80"
+      />
 
       <div className="space-y-6 px-4 py-6">
         <Link to="/map" className="flex items-center gap-1 text-xs font-semibold text-miyeon-main/60">
@@ -47,22 +55,26 @@ export default function PlaceDetailPage() {
             <h1 className="font-display text-3xl text-miyeon-main">{place.name}</h1>
             <p className="mt-1 text-xs text-miyeon-main/60">{place.address}</p>
           </div>
-          <button
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => toggleSave(place.id)}
             className={`flex shrink-0 items-center gap-1.5 rounded-full border px-4 py-2 text-xs font-bold ${
               isSaved(place.id) ? 'border-miyeon-sub1 bg-miyeon-sub1 text-white' : 'border-miyeon-neutral text-miyeon-main'
             }`}
           >
-            <Bookmark className="h-3.5 w-3.5" fill={isSaved(place.id) ? 'currentColor' : 'none'} />
+            <motion.span animate={isSaved(place.id) ? { scale: [1, 1.3, 1] } : { scale: 1 }} transition={{ duration: 0.3 }}>
+              <Bookmark className="h-3.5 w-3.5" fill={isSaved(place.id) ? 'currentColor' : 'none'} />
+            </motion.span>
             {isSaved(place.id) ? 'Saved' : 'Save to My Map'}
-          </button>
+          </motion.button>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 text-sm text-miyeon-main">
           <span className="flex items-center gap-1 font-semibold">
             <Star className="h-4 w-4 fill-miyeon-sub1 text-miyeon-sub1" /> {place.rating}
           </span>
-          <span className="text-miyeon-main/50">({place.reviewCount} reviews)</span>
+          <span className="text-miyeon-main/70">({place.reviewCount} reviews)</span>
           <span>·</span>
           <span>{place.priceRange}</span>
           <span>·</span>
@@ -98,17 +110,24 @@ export default function PlaceDetailPage() {
           <section>
             <h2 className="text-sm font-semibold text-miyeon-main">Treatments</h2>
             <div className="mt-2 space-y-2">
-              {treatments.map((t) => (
-                <Link
+              {treatments.map((t, i) => (
+                <motion.div
                   key={t.id}
-                  to={`/treatment/${t.id}`}
-                  className="flex items-center justify-between rounded-xl border border-miyeon-neutral px-3.5 py-3 text-sm"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.05, duration: 0.3 }}
+                  whileHover={{ x: 4 }}
                 >
-                  <span className="font-medium text-miyeon-main">{t.name}</span>
-                  <span className="text-xs text-miyeon-main/60">
-                    ${t.price.min}–${t.price.max}
-                  </span>
-                </Link>
+                  <Link
+                    to={`/treatment/${t.id}`}
+                    className="flex items-center justify-between rounded-xl border border-miyeon-neutral px-3.5 py-3 text-sm transition-colors hover:border-miyeon-sub1/50"
+                  >
+                    <span className="font-medium text-miyeon-main">{t.name}</span>
+                    <span className="text-xs text-miyeon-main/60">
+                      ${t.price.min}–${t.price.max}
+                    </span>
+                  </Link>
+                </motion.div>
               ))}
             </div>
           </section>
@@ -137,15 +156,17 @@ export default function PlaceDetailPage() {
         )}
 
         <div className="space-y-1.5">
-          <a
+          <motion.a
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             href={withCreatripAffiliate(place.bookingUrl || CREATRIP_BASE_URL)}
             target="_blank"
             rel="noreferrer"
             className="block rounded-full bg-miyeon-sub1 py-3.5 text-center text-sm font-bold text-white shadow-sm shadow-miyeon-sub1/30"
           >
             BOOK WITH CREATRIP →
-          </a>
-          <p className="text-center text-[10px] text-miyeon-main/40">{CREATRIP_DISCLOSURE}</p>
+          </motion.a>
+          <p className="text-center text-[10px] text-miyeon-main/60">{CREATRIP_DISCLOSURE}</p>
         </div>
       </div>
     </div>

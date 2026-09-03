@@ -76,7 +76,7 @@ export const EmailCaptureCard: React.FC<EmailCaptureCardProps> = ({ answers, top
           {status === 'error' && (
             <p className="text-[11px] text-red-500">Couldn't save that — please try again.</p>
           )}
-          <p className="text-center text-[10px] text-miyeon-main/40">
+          <p className="text-center text-[10px] text-miyeon-main/60">
             Good clinics fill up 2–3 weeks ahead. We'll remind you when it's time to book.
           </p>
         </form>

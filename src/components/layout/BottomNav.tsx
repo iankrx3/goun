@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import { motion } from 'motion/react';
 import { Compass, MapPin, Users } from 'lucide-react';
 
 const tabs = [
@@ -17,14 +18,26 @@ export const BottomNav: React.FC = () => (
         key={to}
         to={to}
         end={to === '/'}
-        className={({ isActive }) =>
-          `flex flex-1 flex-col items-center justify-center gap-0.5 text-[9px] font-semibold ${
-            isActive ? 'text-miyeon-sub1' : 'text-miyeon-main/60'
-          }`
-        }
+        className="relative flex flex-1 flex-col items-center justify-center gap-0.5 text-[9px] font-semibold"
       >
-        <Icon className="h-6 w-6" />
-        {label}
+        {({ isActive }) => (
+          <>
+            {isActive && (
+              <motion.span
+                layoutId="bottom-nav-indicator"
+                className="absolute top-0 h-0.5 w-8 rounded-full bg-miyeon-sub1"
+                transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+              />
+            )}
+            <motion.span
+              animate={{ scale: isActive ? 1.15 : 1, y: isActive ? -1 : 0 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+            >
+              <Icon className={`h-6 w-6 ${isActive ? 'text-miyeon-sub1' : 'text-miyeon-main/60'}`} />
+            </motion.span>
+            <span className={isActive ? 'text-miyeon-sub1' : 'text-miyeon-main/60'}>{label}</span>
+          </>
+        )}
       </NavLink>
     ))}
   </nav>

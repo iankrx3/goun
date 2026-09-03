@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import type { CommunityPost, UserSession } from '../types';
 import { useCommunityPosts } from '../hooks/useCommunityPosts';
 import { PostComposer } from '../components/community/PostComposer';
@@ -36,20 +37,23 @@ export default function CommunityPage({ session, onSignIn }: CommunityPageProps)
 
       <div className="flex gap-2 overflow-x-auto no-scrollbar">
         {CATEGORIES.map((cat) => (
-          <button
+          <motion.button
             key={cat.id}
+            layout
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => setFilter(cat.id)}
             className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors ${
               filter === cat.id ? 'bg-miyeon-main text-white' : 'bg-miyeon-neutral/60 text-miyeon-main/70'
             }`}
           >
             {cat.label}
-          </button>
+          </motion.button>
         ))}
       </div>
 
       {loading ? (
-        <p className="py-10 text-center text-sm text-miyeon-main/50">Loading…</p>
+        <p className="py-10 text-center text-sm text-miyeon-main/70">Loading…</p>
       ) : (
         <div className="space-y-3">
           {filteredPosts.map((post) => (

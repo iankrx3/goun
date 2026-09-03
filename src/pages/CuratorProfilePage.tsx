@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { AnimatePresence, motion } from 'motion/react';
 import { ChevronLeft, Globe, Instagram, ListPlus, MapPin, Music2, Pencil } from 'lucide-react';
 import type { Creator, CreatorPick, CuratorList, Place, UserSession } from '../types';
 import { fetchCreatorPicksByCreatorId } from '../services/places';
@@ -59,14 +60,17 @@ export default function CuratorProfilePage({ session }: CuratorProfilePageProps)
       </button>
 
       <div className="mt-4 flex flex-col items-center text-center">
-        <img
+        <motion.img
+          initial={{ opacity: 0, scale: 0.85 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: 'spring', stiffness: 260, damping: 20 }}
           src={creator.avatar_url}
           alt={creator.display_name}
           referrerPolicy="no-referrer"
           className="h-24 w-24 rounded-full object-cover ring-2 ring-miyeon-sub1/30"
         />
         <h1 className="mt-3 font-display text-2xl text-miyeon-main">{creator.display_name}</h1>
-        <p className="text-xs font-medium text-miyeon-main/50">@{creator.username}</p>
+        <p className="text-xs font-medium text-miyeon-main/70">@{creator.username}</p>
         {creator.bio && <p className="mt-3 max-w-md text-sm text-miyeon-main/80">{creator.bio}</p>}
 
         <div className="mt-3 flex items-center gap-2 text-xs font-semibold text-miyeon-main/60">
@@ -126,33 +130,45 @@ export default function CuratorProfilePage({ session }: CuratorProfilePageProps)
               >
                 <Pencil className="h-3.5 w-3.5" /> Edit profile
               </Link>
-              <button
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setIsCreatingList((prev) => !prev)}
                 className="flex items-center gap-1.5 rounded-full bg-miyeon-sub1 px-3.5 py-1.5 text-xs font-bold text-white shadow-sm shadow-miyeon-sub1/30"
               >
                 <ListPlus className="h-3.5 w-3.5" /> New list
-              </button>
+              </motion.button>
             </>
           )}
         </div>
 
-        {isOwner && isCreatingList && (
-          <div className="mt-3 flex w-full max-w-xs items-center gap-2">
-            <input
-              autoFocus
-              value={newListTitle}
-              onChange={(e) => setNewListTitle(e.target.value)}
-              placeholder="List name…"
-              className="w-full rounded-full border border-miyeon-neutral bg-white px-3.5 py-2 text-sm text-miyeon-main placeholder:text-miyeon-main/40 focus:outline-none"
-            />
-            <button
-              onClick={handleCreateList}
-              className="shrink-0 rounded-full bg-miyeon-sub1 px-3.5 py-2 text-xs font-bold text-white"
+        <AnimatePresence>
+          {isOwner && isCreatingList && (
+            <motion.div
+              initial={{ opacity: 0, height: 0, marginTop: 0 }}
+              animate={{ opacity: 1, height: 'auto', marginTop: 12 }}
+              exit={{ opacity: 0, height: 0, marginTop: 0 }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              className="flex w-full max-w-xs items-center gap-2 overflow-hidden"
             >
-              Create
-            </button>
-          </div>
-        )}
+              <input
+                autoFocus
+                value={newListTitle}
+                onChange={(e) => setNewListTitle(e.target.value)}
+                placeholder="List name…"
+                className="w-full rounded-full border border-miyeon-neutral bg-white px-3.5 py-2 text-sm text-miyeon-main placeholder:text-miyeon-main/60 focus:outline-none"
+              />
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleCreateList}
+                className="shrink-0 rounded-full bg-miyeon-sub1 px-3.5 py-2 text-xs font-bold text-white"
+              >
+                Create
+              </motion.button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <div className="mt-8">
@@ -161,26 +177,33 @@ export default function CuratorProfilePage({ session }: CuratorProfilePageProps)
           <p className="mt-2 text-sm text-miyeon-main/60">No lists yet.</p>
         ) : (
           <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {lists.map((list) => (
-              <Link
+            {lists.map((list, i) => (
+              <motion.div
                 key={list.id}
-                to={`/curator/${creator.id}/lists/${list.id}`}
-                className="overflow-hidden rounded-2xl border border-miyeon-neutral bg-white shadow-sm"
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: i * 0.06, ease: [0.16, 1, 0.3, 1] }}
+                whileHover={{ y: -3 }}
               >
-                {list.cover_photo_url ? (
-                  <img src={list.cover_photo_url} alt={list.title} className="h-24 w-full object-cover" />
-                ) : (
-                  <div className="flex h-24 w-full items-center justify-center bg-miyeon-neutral/50 text-miyeon-main/30">
-                    <MapPin className="h-6 w-6" />
+                <Link
+                  to={`/curator/${creator.id}/lists/${list.id}`}
+                  className="block overflow-hidden rounded-2xl border border-miyeon-neutral bg-white shadow-sm transition-shadow hover:shadow-lg hover:shadow-miyeon-main/10"
+                >
+                  {list.cover_photo_url ? (
+                    <img src={list.cover_photo_url} alt={list.title} className="h-24 w-full object-cover" />
+                  ) : (
+                    <div className="flex h-24 w-full items-center justify-center bg-miyeon-neutral/50 text-miyeon-main/50">
+                      <MapPin className="h-6 w-6" />
+                    </div>
+                  )}
+                  <div className="p-2.5">
+                    <p className="truncate text-sm font-semibold text-miyeon-main">{list.title}</p>
+                    <p className="text-[11px] text-miyeon-main/70">
+                      {list.spot_count} spot{list.spot_count === 1 ? '' : 's'}
+                    </p>
                   </div>
-                )}
-                <div className="p-2.5">
-                  <p className="truncate text-sm font-semibold text-miyeon-main">{list.title}</p>
-                  <p className="text-[11px] text-miyeon-main/50">
-                    {list.spot_count} spot{list.spot_count === 1 ? '' : 's'}
-                  </p>
-                </div>
-              </Link>
+                </Link>
+              </motion.div>
             ))}
           </div>
         )}

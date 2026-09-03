@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'motion/react';
 import type { BeautyCategory } from '../../types';
 import { categoryMeta } from '../../data/mock';
 
@@ -22,9 +23,14 @@ export const CategoryRadial: React.FC<CategoryRadialProps> = ({
 
   return (
     <div className="relative mx-auto flex h-[340px] w-[340px] max-w-full items-center justify-center">
-      <div className="flex h-24 w-24 items-center justify-center rounded-full bg-miyeon-sub1 text-center text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-miyeon-sub1/30">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.6 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+        className="flex h-24 w-24 items-center justify-center rounded-full bg-miyeon-sub1 text-center text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-miyeon-sub1/30"
+      >
         {centerLabel}
-      </div>
+      </motion.div>
 
       {categories.map((category, i) => {
         const angle = angleStep * i - Math.PI / 2;
@@ -32,15 +38,19 @@ export const CategoryRadial: React.FC<CategoryRadialProps> = ({
         const y = Math.sin(angle) * radius;
         const meta = categoryMeta[category];
         return (
-          <button
+          <motion.button
             key={category}
             onClick={() => onSelect(category)}
-            style={{ transform: `translate(${x}px, ${y}px)` }}
-            className="group absolute flex h-20 w-20 flex-col items-center justify-center gap-1 rounded-full bg-miyeon-neutral text-miyeon-main shadow-sm transition-all hover:bg-miyeon-sub1 hover:text-white"
+            initial={{ opacity: 0, x: 0, y: 0, scale: 0.3 }}
+            animate={{ opacity: 1, x, y, scale: 1 }}
+            transition={{ type: 'spring', stiffness: 220, damping: 18, delay: 0.1 + i * 0.06 }}
+            whileHover={{ scale: 1.12 }}
+            whileTap={{ scale: 0.95 }}
+            className="group absolute flex h-20 w-20 flex-col items-center justify-center gap-1 rounded-full bg-miyeon-neutral text-miyeon-main shadow-sm transition-colors hover:bg-miyeon-sub1 hover:text-white"
           >
             <span className="text-xl">{meta.icon}</span>
             <span className="text-[11px] font-semibold">{meta.label}</span>
-          </button>
+          </motion.button>
         );
       })}
     </div>

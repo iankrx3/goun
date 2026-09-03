@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import type { CommunityPost, UserSession } from '../../types';
 import type { CreatePostInput } from '../../services/community';
 import { DEMO_USER } from '../../services/auth';
@@ -57,7 +58,7 @@ export const PostComposer: React.FC<PostComposerProps> = ({ session, onSignIn, o
           onChange={(e) => setText(e.target.value)}
           placeholder="Share a place, treatment, or question…"
           rows={2}
-          className="w-full resize-none bg-transparent text-sm text-miyeon-main placeholder:text-miyeon-main/40 focus:outline-none"
+          className="w-full resize-none bg-transparent text-sm text-miyeon-main placeholder:text-miyeon-main/60 focus:outline-none"
         />
       </div>
 
@@ -75,17 +76,19 @@ export const PostComposer: React.FC<PostComposerProps> = ({ session, onSignIn, o
             </button>
           ))}
         </div>
-        <button
+        <motion.button
+          whileHover={!text.trim() || submitting ? undefined : { scale: 1.05 }}
+          whileTap={!text.trim() || submitting ? undefined : { scale: 0.95 }}
           onClick={handleSubmit}
           disabled={!text.trim() || submitting}
           className="shrink-0 rounded-full bg-miyeon-sub1 px-4 py-1.5 text-xs font-bold text-white shadow-sm shadow-miyeon-sub1/30 disabled:opacity-40"
         >
           {submitting ? 'Posting…' : 'Post'}
-        </button>
+        </motion.button>
       </div>
 
       {session.user.id === DEMO_USER.id && (
-        <p className="mt-2.5 text-[11px] text-miyeon-main/50">
+        <p className="mt-2.5 text-[11px] text-miyeon-main/70">
           Demo mode saves to this browser only. Sign in with Google to keep your posts, likes, and comments across
           logins and devices.
         </p>

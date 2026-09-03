@@ -17,7 +17,7 @@ interface CuratorProfileFormProps {
 }
 
 const inputClass =
-  'w-full rounded-xl border border-miyeon-neutral bg-white px-3.5 py-2.5 text-sm text-miyeon-main placeholder:text-miyeon-main/40 focus:outline-none focus:border-miyeon-sub1/50';
+  'w-full rounded-xl border border-miyeon-neutral bg-white px-3.5 py-2.5 text-sm text-miyeon-main placeholder:text-miyeon-main/60 focus:outline-none focus:border-miyeon-sub1/50';
 
 const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
   <label className="block space-y-1.5">

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { motion } from 'motion/react';
 import { ChevronLeft } from 'lucide-react';
 import type { Place, Treatment } from '../types';
 import { fetchPlaceById, fetchTreatmentById } from '../services/places';
@@ -41,12 +42,16 @@ export default function TreatmentDetailPage() {
       <TreatmentExplainer treatment={treatment} />
 
       <div className="grid grid-cols-2 gap-3 text-sm">
-        <Fact label="Price" value={`$${treatment.price.min}–$${treatment.price.max}`} />
-        <Fact label="Downtime" value={treatment.downtime.replace(/-/g, ' ')} />
-        <Fact label="Result Timing" value={treatment.resultTiming.replace(/-/g, ' ')} />
-        <Fact label="Intensity" value={treatment.intensity} />
-        <Fact label="Languages" value={treatment.language.join(', ')} />
-        <Fact label="Rating" value={`★ ${treatment.rating} (${treatment.reviewCount})`} />
+        {[
+          { label: 'Price', value: `$${treatment.price.min}–$${treatment.price.max}` },
+          { label: 'Downtime', value: treatment.downtime.replace(/-/g, ' ') },
+          { label: 'Result Timing', value: treatment.resultTiming.replace(/-/g, ' ') },
+          { label: 'Intensity', value: treatment.intensity },
+          { label: 'Languages', value: treatment.language.join(', ') },
+          { label: 'Rating', value: `★ ${treatment.rating} (${treatment.reviewCount})` },
+        ].map((fact, i) => (
+          <Fact key={fact.label} label={fact.label} value={fact.value} delay={i * 0.05} />
+        ))}
       </div>
 
       <div>
@@ -62,30 +67,37 @@ export default function TreatmentDetailPage() {
 
       {place && (
         <Link to={`/place/${place.id}`} className="block rounded-2xl border border-miyeon-neutral bg-white p-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-miyeon-main/50">Available at</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-miyeon-main/70">Available at</p>
           <p className="mt-1 text-sm font-semibold text-miyeon-main">{place.name}</p>
           <p className="text-xs text-miyeon-main/60">{place.area}</p>
         </Link>
       )}
 
       <div className="space-y-1.5">
-        <a
+        <motion.a
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
           href={withCreatripAffiliate(treatment.creatripUrl || CREATRIP_BASE_URL)}
           target="_blank"
           rel="noreferrer"
           className="block rounded-full bg-miyeon-sub1 py-3.5 text-center text-sm font-bold text-white shadow-sm shadow-miyeon-sub1/30"
         >
           BOOK WITH CREATRIP →
-        </a>
-        <p className="text-center text-[10px] text-miyeon-main/40">{CREATRIP_DISCLOSURE}</p>
+        </motion.a>
+        <p className="text-center text-[10px] text-miyeon-main/60">{CREATRIP_DISCLOSURE}</p>
       </div>
     </div>
   );
 }
 
-const Fact: React.FC<{ label: string; value: string }> = ({ label, value }) => (
-  <div className="rounded-xl bg-miyeon-neutral/40 px-3 py-2.5">
-    <p className="text-[10px] uppercase tracking-wider text-miyeon-main/50">{label}</p>
+const Fact: React.FC<{ label: string; value: string; delay?: number }> = ({ label, value, delay = 0 }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 8 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.3, delay }}
+    className="rounded-xl bg-miyeon-neutral/40 px-3 py-2.5"
+  >
+    <p className="text-[10px] uppercase tracking-wider text-miyeon-main/70">{label}</p>
     <p className="mt-0.5 font-medium capitalize text-miyeon-main">{value}</p>
-  </div>
+  </motion.div>
 );

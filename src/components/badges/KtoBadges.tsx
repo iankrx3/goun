@@ -21,7 +21,7 @@ export const MedicalInfoBadge: React.FC = () => (
 );
 
 export const KtoSourceNote: React.FC = () => (
-  <p className="text-[10px] text-miyeon-main/50">자료: 한국관광공사</p>
+  <p className="text-[10px] text-miyeon-main/70">자료: 한국관광공사</p>
 );
 
 export const NearbyWellnessSection: React.FC<{ spots?: WellnessSpot[] }> = ({ spots }) => {
@@ -37,7 +37,7 @@ export const NearbyWellnessSection: React.FC<{ spots?: WellnessSpot[] }> = ({ sp
           <div key={spot.id} className="rounded-2xl border border-miyeon-neutral bg-white p-3">
             <p className="text-sm font-medium text-miyeon-main">{spot.name}</p>
             {spot.intro && <p className="mt-0.5 text-xs text-miyeon-main/70">{spot.intro}</p>}
-            <p className="mt-1 text-[11px] text-miyeon-main/50">
+            <p className="mt-1 text-[11px] text-miyeon-main/70">
               {spot.address}
               {spot.distanceKm != null ? ` · ${spot.distanceKm.toFixed(1)}km away` : ''}
             </p>

@@ -59,18 +59,18 @@ export const PlaceSearchPicker: React.FC<PlaceSearchPickerProps> = ({ onSelect, 
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2 rounded-full border border-miyeon-neutral bg-white px-3.5 py-2">
-        <Search className="h-4 w-4 shrink-0 text-miyeon-main/40" />
+        <Search className="h-4 w-4 shrink-0 text-miyeon-main/60" />
         <input
           autoFocus
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search a place by name…"
-          className="w-full bg-transparent text-sm text-miyeon-main placeholder:text-miyeon-main/40 focus:outline-none"
+          className="w-full bg-transparent text-sm text-miyeon-main placeholder:text-miyeon-main/60 focus:outline-none"
         />
-        {loading && <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-miyeon-main/40" />}
+        {loading && <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-miyeon-main/60" />}
         {onClose && (
           <button onClick={onClose} aria-label="Close search">
-            <X className="h-4 w-4 text-miyeon-main/40" />
+            <X className="h-4 w-4 text-miyeon-main/60" />
           </button>
         )}
       </div>
@@ -86,7 +86,7 @@ export const PlaceSearchPicker: React.FC<PlaceSearchPickerProps> = ({ onSelect, 
               <img src={place.photoUrl} alt={place.name} className="h-10 w-10 shrink-0 rounded-lg object-cover" />
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-miyeon-main">{place.name}</p>
-                <p className="truncate text-xs text-miyeon-main/50">{place.area}</p>
+                <p className="truncate text-xs text-miyeon-main/70">{place.area}</p>
               </div>
             </button>
           ))}

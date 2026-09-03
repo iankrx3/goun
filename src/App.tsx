@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'motion/react';
 import { NavHeader } from './components/layout/NavHeader';
 import { BottomNav } from './components/layout/BottomNav';
 import { GoogleAuthModal } from './components/auth/GoogleAuthModal';
@@ -45,32 +46,46 @@ export default function App() {
       <NavHeader session={session} onSignIn={() => setIsAuthOpen(true)} onSignOut={signOut} />
 
       <main className={isMapRoute ? '' : 'pb-[var(--bottom-nav-h)] sm:pb-0'}>
-        <Routes>
-          <Route path="/" element={<ExplorePage />} />
-          <Route path="/map" element={<MapPage />} />
-          <Route
-            path="/community"
-            element={<CommunityPage session={session} onSignIn={() => setIsAuthOpen(true)} />}
-          />
-          <Route
-            path="/community/:id"
-            element={<PostDetailPage session={session} onSignIn={() => setIsAuthOpen(true)} />}
-          />
-          <Route path="/place/:id" element={<PlaceDetailPage />} />
-          <Route path="/treatment/:id" element={<TreatmentDetailPage />} />
-          <Route
-            path="/curator/signup"
-            element={
-              <CuratorSignupPage session={session} onSignIn={() => setIsAuthOpen(true)} onCreatorUpdated={onCreatorUpdated} />
-            }
-          />
-          <Route path="/curator/:id" element={<CuratorProfilePage session={session} />} />
-          <Route
-            path="/curator/:id/edit"
-            element={<CuratorEditPage session={session} onCreatorUpdated={onCreatorUpdated} />}
-          />
-          <Route path="/curator/:id/lists/:listId" element={<CuratorListPage session={session} />} />
-        </Routes>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <Routes>
+              <Route path="/" element={<ExplorePage />} />
+              <Route path="/map" element={<MapPage />} />
+              <Route
+                path="/community"
+                element={<CommunityPage session={session} onSignIn={() => setIsAuthOpen(true)} />}
+              />
+              <Route
+                path="/community/:id"
+                element={<PostDetailPage session={session} onSignIn={() => setIsAuthOpen(true)} />}
+              />
+              <Route path="/place/:id" element={<PlaceDetailPage />} />
+              <Route path="/treatment/:id" element={<TreatmentDetailPage />} />
+              <Route
+                path="/curator/signup"
+                element={
+                  <CuratorSignupPage
+                    session={session}
+                    onSignIn={() => setIsAuthOpen(true)}
+                    onCreatorUpdated={onCreatorUpdated}
+                  />
+                }
+              />
+              <Route path="/curator/:id" element={<CuratorProfilePage session={session} />} />
+              <Route
+                path="/curator/:id/edit"
+                element={<CuratorEditPage session={session} onCreatorUpdated={onCreatorUpdated} />}
+              />
+              <Route path="/curator/:id/lists/:listId" element={<CuratorListPage session={session} />} />
+            </Routes>
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       <BottomNav />

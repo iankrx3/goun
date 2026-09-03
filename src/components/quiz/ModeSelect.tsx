@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'motion/react';
 
 interface Mode {
   icon: string;
@@ -21,14 +22,19 @@ interface ModeSelectProps {
 // Only Treatments is live this pass; Salon/Products are visible but non-interactive.
 export const ModeSelect: React.FC<ModeSelectProps> = ({ onSelectTreatments }) => (
   <div className="space-y-3">
-    {MODES.map((mode) => {
+    {MODES.map((mode, i) => {
       const clickable = !mode.comingSoon;
       return (
-        <button
+        <motion.button
           key={mode.title}
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] }}
+          whileHover={clickable ? { scale: 1.015, y: -2 } : undefined}
+          whileTap={clickable ? { scale: 0.98 } : undefined}
           onClick={clickable ? onSelectTreatments : undefined}
           disabled={!clickable}
-          className={`flex w-full items-center gap-4 rounded-3xl border p-5 text-left transition-all ${
+          className={`flex w-full items-center gap-4 rounded-3xl border p-5 text-left transition-colors ${
             clickable
               ? 'border-miyeon-neutral bg-white hover:border-miyeon-sub1/60 hover:shadow-sm'
               : 'border-miyeon-neutral/60 bg-miyeon-neutral/30 cursor-default'
@@ -44,9 +50,9 @@ export const ModeSelect: React.FC<ModeSelectProps> = ({ onSelectTreatments }) =>
                 </span>
               )}
             </span>
-            <span className="mt-0.5 block whitespace-pre-line text-xs text-miyeon-main/60">{mode.subtitle}</span>
+            <span className="mt-0.5 block whitespace-pre-line text-xs text-miyeon-main/70">{mode.subtitle}</span>
           </span>
-        </button>
+        </motion.button>
       );
     })}
   </div>

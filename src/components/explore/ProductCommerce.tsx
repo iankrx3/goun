@@ -38,7 +38,7 @@ export const ProductCommerce: React.FC<ProductCommerceProps> = ({ concerns }) =>
           </a>
         ))}
       </div>
-      <p className="mt-3 text-center text-[10px] text-miyeon-main/40">via Olive Young</p>
+      <p className="mt-3 text-center text-[10px] text-miyeon-main/60">via Olive Young</p>
     </div>
   );
 };

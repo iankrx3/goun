@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { AnimatePresence, motion } from 'motion/react';
 import { Heart, MessageCircle, Star, Trash2 } from 'lucide-react';
 import type { CommunityPost, PostComment, UserSession } from '../../types';
 import { addComment, deleteComment, fetchComments } from '../../services/community';
@@ -73,7 +74,13 @@ export const PostCard: React.FC<PostCardProps> = ({
   };
 
   return (
-    <article className="rounded-2xl border border-miyeon-neutral bg-white p-4">
+    <motion.article
+      initial={{ opacity: 0, y: 14 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+      className="rounded-2xl border border-miyeon-neutral bg-white p-4"
+    >
       {defaultExpanded ? (
         <div>
           <div className="flex items-center gap-2.5">
@@ -85,7 +92,7 @@ export const PostCard: React.FC<PostCardProps> = ({
             />
             <div>
               <p className="text-sm font-semibold text-miyeon-main">{post.authorName}</p>
-              <p className="text-[11px] text-miyeon-main/50">
+              <p className="text-[11px] text-miyeon-main/70">
                 {new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
               </p>
             </div>
@@ -109,7 +116,7 @@ export const PostCard: React.FC<PostCardProps> = ({
             />
             <div>
               <p className="text-sm font-semibold text-miyeon-main">{post.authorName}</p>
-              <p className="text-[11px] text-miyeon-main/50">
+              <p className="text-[11px] text-miyeon-main/70">
                 {new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
               </p>
             </div>
@@ -135,15 +142,18 @@ export const PostCard: React.FC<PostCardProps> = ({
       )}
 
       <div className="mt-3.5 flex items-center gap-5 border-t border-miyeon-neutral pt-3">
-        <button
+        <motion.button
+          whileTap={{ scale: 0.9 }}
           onClick={handleLike}
           className={`flex items-center gap-1.5 text-xs font-semibold ${
             post.likedByMe ? 'text-miyeon-sub1' : 'text-miyeon-main/70 hover:text-miyeon-main'
           }`}
         >
-          <Heart className="h-4 w-4" fill={post.likedByMe ? 'currentColor' : 'none'} />
+          <motion.span animate={post.likedByMe ? { scale: [1, 1.4, 1] } : { scale: 1 }} transition={{ duration: 0.3 }}>
+            <Heart className="h-4 w-4" fill={post.likedByMe ? 'currentColor' : 'none'} />
+          </motion.span>
           {post.likeCount}
-        </button>
+        </motion.button>
         {defaultExpanded ? (
           <button
             onClick={() => setExpanded((v) => !v)}
@@ -165,7 +175,7 @@ export const PostCard: React.FC<PostCardProps> = ({
         {isOwnPost && onDeletePost && (
           <button
             onClick={handleDeletePost}
-            className="ml-auto flex items-center gap-1.5 text-xs font-semibold text-miyeon-main/50 hover:text-red-500"
+            className="ml-auto flex items-center gap-1.5 text-xs font-semibold text-miyeon-main/70 hover:text-red-500"
             aria-label="게시글 삭제"
           >
             <Trash2 className="h-4 w-4" />
@@ -173,10 +183,18 @@ export const PostCard: React.FC<PostCardProps> = ({
         )}
       </div>
 
-      {expanded && (
+      <AnimatePresence initial={false}>
+        {expanded && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+            className="overflow-hidden"
+          >
         <div className="mt-3 space-y-2.5 border-t border-miyeon-neutral pt-3">
           {commentsLoaded && comments.length === 0 && (
-            <p className="text-xs text-miyeon-main/50">No comments yet.</p>
+            <p className="text-xs text-miyeon-main/70">No comments yet.</p>
           )}
           {comments.map((c) => (
             <div key={c.id} className="flex items-start gap-2">
@@ -194,7 +212,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                 {session.user?.id === c.authorId && (
                   <button
                     onClick={() => handleDeleteComment(c)}
-                    className="shrink-0 text-miyeon-main/40 hover:text-red-500"
+                    className="shrink-0 text-miyeon-main/60 hover:text-red-500"
                     aria-label="댓글 삭제"
                   >
                     <Trash2 className="h-3 w-3" />
@@ -213,7 +231,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                   if (e.key === 'Enter') handleSubmitComment();
                 }}
                 placeholder="Add a comment…"
-                className="w-full rounded-full border border-miyeon-neutral px-3.5 py-1.5 text-xs text-miyeon-main placeholder:text-miyeon-main/40 focus:outline-none focus:border-miyeon-sub1/50"
+                className="w-full rounded-full border border-miyeon-neutral px-3.5 py-1.5 text-xs text-miyeon-main placeholder:text-miyeon-main/60 focus:outline-none focus:border-miyeon-sub1/50"
               />
               <button
                 onClick={handleSubmitComment}
@@ -229,7 +247,9 @@ export const PostCard: React.FC<PostCardProps> = ({
             </button>
           )}
         </div>
-      )}
-    </article>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.article>
   );
 };

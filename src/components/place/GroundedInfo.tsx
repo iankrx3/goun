@@ -69,14 +69,14 @@ export const GroundedInfo: React.FC<{ place: Place }> = ({ place }) => {
                   href={source.uri}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-[11px] text-miyeon-main/50 underline hover:text-miyeon-sub1"
+                  className="text-[11px] text-miyeon-main/70 underline hover:text-miyeon-sub1"
                 >
                   {source.title || source.uri}
                 </a>
               ))}
             </div>
           )}
-          <p className="text-[10px] text-miyeon-main/40">AI-generated from Google Search — verify before you go.</p>
+          <p className="text-[10px] text-miyeon-main/60">AI-generated from Google Search — verify before you go.</p>
         </div>
       )}
     </section>
