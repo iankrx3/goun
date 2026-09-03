@@ -21,6 +21,7 @@ export const PostComposer: React.FC<PostComposerProps> = ({ session, onSignIn, o
   const [text, setText] = useState('');
   const [category, setCategory] = useState<CommunityPost['category']>('trending');
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!session.isLoggedIn || !session.user) {
     return (
@@ -36,9 +37,12 @@ export const PostComposer: React.FC<PostComposerProps> = ({ session, onSignIn, o
   const handleSubmit = async () => {
     if (!text.trim() || submitting) return;
     setSubmitting(true);
+    setError(null);
     try {
       await onSubmit({ text: text.trim(), category });
       setText('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not post. Try again.');
     } finally {
       setSubmitting(false);
     }
@@ -86,6 +90,8 @@ export const PostComposer: React.FC<PostComposerProps> = ({ session, onSignIn, o
           {submitting ? 'Posting…' : 'Post'}
         </motion.button>
       </div>
+
+      {error && <p className="mt-2 text-xs text-red-500">{error}</p>}
 
       {session.user.id === DEMO_USER.id && (
         <p className="mt-2.5 text-[11px] text-miyeon-main/70">

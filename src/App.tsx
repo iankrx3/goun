@@ -88,7 +88,7 @@ export default function App() {
         </AnimatePresence>
       </main>
 
-      <BottomNav />
+      <BottomNav session={session} onSignIn={() => setIsAuthOpen(true)} />
 
       <GoogleAuthModal
         isOpen={isAuthOpen}

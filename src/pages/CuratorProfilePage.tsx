@@ -20,6 +20,8 @@ export default function CuratorProfilePage({ session }: CuratorProfilePageProps)
   const [loading, setLoading] = useState(true);
   const [isCreatingList, setIsCreatingList] = useState(false);
   const [newListTitle, setNewListTitle] = useState('');
+  const [isSubmittingList, setIsSubmittingList] = useState(false);
+  const [listError, setListError] = useState<string | null>(null);
 
   const isOwner = Boolean(id && session.creator?.id === id);
 
@@ -40,11 +42,19 @@ export default function CuratorProfilePage({ session }: CuratorProfilePageProps)
   const totalSpots = lists.reduce((sum, l) => sum + l.spot_count, 0);
 
   const handleCreateList = async () => {
-    if (!newListTitle.trim() || !id) return;
-    const list = await createList(session, { title: newListTitle.trim() });
-    setNewListTitle('');
-    setIsCreatingList(false);
-    navigate(`/curator/${id}/lists/${list.id}`);
+    if (!newListTitle.trim() || !id || isSubmittingList) return;
+    setIsSubmittingList(true);
+    setListError(null);
+    try {
+      const list = await createList(session, { title: newListTitle.trim() });
+      setNewListTitle('');
+      setIsCreatingList(false);
+      navigate(`/curator/${id}/lists/${list.id}`);
+    } catch (err) {
+      setListError(err instanceof Error ? err.message : 'Could not create the list. Try again.');
+    } finally {
+      setIsSubmittingList(false);
+    }
   };
 
   if (loading) return <div className="px-4 py-10 text-sm text-miyeon-main/60">Loading…</div>;
@@ -133,7 +143,10 @@ export default function CuratorProfilePage({ session }: CuratorProfilePageProps)
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => setIsCreatingList((prev) => !prev)}
+                onClick={() => {
+                  setIsCreatingList((prev) => !prev);
+                  setListError(null);
+                }}
                 className="flex items-center gap-1.5 rounded-full bg-miyeon-sub1 px-3.5 py-1.5 text-xs font-bold text-white shadow-sm shadow-miyeon-sub1/30"
               >
                 <ListPlus className="h-3.5 w-3.5" /> New list
@@ -149,23 +162,30 @@ export default function CuratorProfilePage({ session }: CuratorProfilePageProps)
               animate={{ opacity: 1, height: 'auto', marginTop: 12 }}
               exit={{ opacity: 0, height: 0, marginTop: 0 }}
               transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-              className="flex w-full max-w-xs items-center gap-2 overflow-hidden"
+              className="w-full max-w-xs overflow-hidden"
             >
-              <input
-                autoFocus
-                value={newListTitle}
-                onChange={(e) => setNewListTitle(e.target.value)}
-                placeholder="List name…"
-                className="w-full rounded-full border border-miyeon-neutral bg-white px-3.5 py-2 text-sm text-miyeon-main placeholder:text-miyeon-main/60 focus:outline-none"
-              />
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleCreateList}
-                className="shrink-0 rounded-full bg-miyeon-sub1 px-3.5 py-2 text-xs font-bold text-white"
-              >
-                Create
-              </motion.button>
+              <div className="flex items-center gap-2">
+                <input
+                  autoFocus
+                  value={newListTitle}
+                  onChange={(e) => setNewListTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleCreateList();
+                  }}
+                  placeholder="List name…"
+                  className="w-full rounded-full border border-miyeon-neutral bg-white px-3.5 py-2 text-sm text-miyeon-main placeholder:text-miyeon-main/60 focus:outline-none"
+                />
+                <motion.button
+                  whileHover={isSubmittingList ? undefined : { scale: 1.05 }}
+                  whileTap={isSubmittingList ? undefined : { scale: 0.95 }}
+                  onClick={handleCreateList}
+                  disabled={isSubmittingList || !newListTitle.trim()}
+                  className="shrink-0 rounded-full bg-miyeon-sub1 px-3.5 py-2 text-xs font-bold text-white disabled:opacity-50"
+                >
+                  {isSubmittingList ? 'Creating…' : 'Create'}
+                </motion.button>
+              </div>
+              {listError && <p className="mt-1.5 text-xs text-red-500">{listError}</p>}
             </motion.div>
           )}
         </AnimatePresence>

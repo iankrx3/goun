@@ -28,6 +28,7 @@ export const PostCard: React.FC<PostCardProps> = ({
   const [commentsLoaded, setCommentsLoaded] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [commentError, setCommentError] = useState<string | null>(null);
 
   const isOwnPost = Boolean(session.user?.id) && session.user?.id === post.authorId;
 
@@ -51,10 +52,13 @@ export const PostCard: React.FC<PostCardProps> = ({
   const handleSubmitComment = async () => {
     if (!session.isLoggedIn || !session.user || !commentText.trim() || submitting) return;
     setSubmitting(true);
+    setCommentError(null);
     try {
       const comment = await addComment(post.id, { text: commentText.trim() }, session);
       setComments((prev) => [...prev, comment]);
       setCommentText('');
+    } catch (err) {
+      setCommentError(err instanceof Error ? err.message : 'Could not post the comment. Try again.');
     } finally {
       setSubmitting(false);
     }
@@ -238,7 +242,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                 disabled={!commentText.trim() || submitting}
                 className="shrink-0 text-xs font-bold text-miyeon-sub1 disabled:opacity-40"
               >
-                Post
+                {submitting ? 'Posting…' : 'Post'}
               </button>
             </div>
           ) : (
@@ -246,6 +250,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               Sign in to comment
             </button>
           )}
+          {commentError && <p className="text-xs text-red-500">{commentError}</p>}
         </div>
           </motion.div>
         )}

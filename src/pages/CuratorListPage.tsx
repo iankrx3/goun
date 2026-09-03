@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { motion } from 'motion/react';
 import { ChevronLeft, MapPin, Plus, X } from 'lucide-react';
 import type { CuratorList, ListSpot, Place, UserSession } from '../types';
 import { addSpotToList, fetchListById, fetchListSpots, removeSpotFromList } from '../services/curator';
@@ -19,6 +20,8 @@ export default function CuratorListPage({ session }: CuratorListPageProps) {
   const [isPicking, setIsPicking] = useState(false);
   const [pendingPlace, setPendingPlace] = useState<Place | null>(null);
   const [note, setNote] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const isOwner = Boolean(id && session.creator?.id === id);
 
@@ -34,19 +37,32 @@ export default function CuratorListPage({ session }: CuratorListPageProps) {
   }, [listId]);
 
   const confirmAddSpot = async () => {
-    if (!pendingPlace || !listId) return;
-    const spot = await addSpotToList(session, listId, pendingPlace, note.trim() || undefined);
-    setSpots((prev) => [...prev, spot]);
-    setList((prev) => (prev ? { ...prev, spot_count: prev.spot_count + 1 } : prev));
-    setPendingPlace(null);
-    setNote('');
+    if (!pendingPlace || !listId || isSaving) return;
+    setIsSaving(true);
+    setError(null);
+    try {
+      const spot = await addSpotToList(session, listId, pendingPlace, note.trim() || undefined);
+      setSpots((prev) => [...prev, spot]);
+      setList((prev) => (prev ? { ...prev, spot_count: prev.spot_count + 1 } : prev));
+      setPendingPlace(null);
+      setNote('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not add this spot. Try again.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleRemove = async (spotId: string) => {
     if (!listId) return;
-    await removeSpotFromList(session, listId, spotId);
-    setSpots((prev) => prev.filter((s) => s.id !== spotId));
-    setList((prev) => (prev ? { ...prev, spot_count: Math.max(0, prev.spot_count - 1) } : prev));
+    setError(null);
+    try {
+      await removeSpotFromList(session, listId, spotId);
+      setSpots((prev) => prev.filter((s) => s.id !== spotId));
+      setList((prev) => (prev ? { ...prev, spot_count: Math.max(0, prev.spot_count - 1) } : prev));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not remove this spot. Try again.');
+    }
   };
 
   if (loading) return <div className="px-4 py-10 text-sm text-miyeon-main/60">Loading…</div>;
@@ -77,17 +93,27 @@ export default function CuratorListPage({ session }: CuratorListPageProps) {
           <MapPin className="h-3.5 w-3.5" /> View on map
         </Link>
         {isOwner && (
-          <button
-            onClick={() => setIsPicking((prev) => !prev)}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => {
+              setIsPicking((prev) => !prev);
+              setError(null);
+            }}
             className="flex items-center gap-1.5 rounded-full bg-miyeon-sub1 px-3.5 py-1.5 text-xs font-bold text-white shadow-sm shadow-miyeon-sub1/30"
           >
             <Plus className="h-3.5 w-3.5" /> Add spot
-          </button>
+          </motion.button>
         )}
       </div>
 
       {isOwner && isPicking && (
-        <div className="rounded-2xl border border-miyeon-neutral bg-miyeon-neutral/20 p-3">
+        <motion.div
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2 }}
+          className="rounded-2xl border border-miyeon-neutral bg-miyeon-neutral/20 p-3"
+        >
           <PlaceSearchPicker
             onSelect={(place) => {
               setPendingPlace(place);
@@ -95,11 +121,16 @@ export default function CuratorListPage({ session }: CuratorListPageProps) {
             }}
             onClose={() => setIsPicking(false)}
           />
-        </div>
+        </motion.div>
       )}
 
       {isOwner && pendingPlace && (
-        <div className="space-y-2 rounded-2xl border border-miyeon-sub1/40 bg-white p-3">
+        <motion.div
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2 }}
+          className="space-y-2 rounded-2xl border border-miyeon-sub1/40 bg-white p-3"
+        >
           <p className="text-sm font-semibold text-miyeon-main">Add "{pendingPlace.name}"</p>
           <textarea
             value={note}
@@ -108,22 +139,32 @@ export default function CuratorListPage({ session }: CuratorListPageProps) {
             rows={2}
             className="w-full resize-none rounded-xl border border-miyeon-neutral bg-white px-3 py-2 text-sm text-miyeon-main placeholder:text-miyeon-main/60 focus:outline-none"
           />
+          {error && <p className="text-xs text-red-500">{error}</p>}
           <div className="flex gap-2">
-            <button onClick={confirmAddSpot} className="rounded-full bg-miyeon-sub1 px-4 py-1.5 text-xs font-bold text-white">
-              Add to list
-            </button>
+            <motion.button
+              whileHover={isSaving ? undefined : { scale: 1.03 }}
+              whileTap={isSaving ? undefined : { scale: 0.97 }}
+              onClick={confirmAddSpot}
+              disabled={isSaving}
+              className="rounded-full bg-miyeon-sub1 px-4 py-1.5 text-xs font-bold text-white disabled:opacity-50"
+            >
+              {isSaving ? 'Adding…' : 'Add to list'}
+            </motion.button>
             <button
               onClick={() => {
                 setPendingPlace(null);
                 setNote('');
+                setError(null);
               }}
               className="rounded-full border border-miyeon-neutral px-4 py-1.5 text-xs font-semibold text-miyeon-main"
             >
               Cancel
             </button>
           </div>
-        </div>
+        </motion.div>
       )}
+
+      {error && !pendingPlace && <p className="text-xs text-red-500">{error}</p>}
 
       {spots.length === 0 ? (
         <p className="text-sm text-miyeon-main/60">No spots in this list yet.</p>
@@ -134,13 +175,14 @@ export default function CuratorListPage({ session }: CuratorListPageProps) {
               <div className="relative">
                 <PlaceCard place={spot.place} onView={(place) => navigate(`/place/${place.id}`)} />
                 {isOwner && (
-                  <button
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
                     onClick={() => handleRemove(spot.id)}
                     aria-label="Remove spot"
                     className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-miyeon-main shadow-sm"
                   >
                     <X className="h-3.5 w-3.5" />
-                  </button>
+                  </motion.button>
                 )}
               </div>
               {spot.note && <p className="px-1 text-xs italic text-miyeon-main/60">"{spot.note}"</p>}
