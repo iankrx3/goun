@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { PLACES_BASE, PLACES_FIELD_MASK } from '../_lib/proxy.js';
+import { PLACES_BASE, PLACES_FIELD_MASK } from '../../shared/apiProxy.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {

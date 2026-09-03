@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { MatchResult } from '../types';
-import { withCreatripAffiliate, CREATRIP_BASE_URL, CREATRIP_DISCLOSURE } from '../lib/creatrip';
+import type { MatchResult } from '../../types';
+import { withCreatripAffiliate, CREATRIP_BASE_URL, CREATRIP_DISCLOSURE } from '../../lib/creatrip';
 
 interface ResultCardProps {
   result: MatchResult;

@@ -2,11 +2,11 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import { Link, useNavigate } from 'react-router-dom';
 import { Locate, Loader2, Search, X, ChevronRight, ChevronDown, Plus, Minus } from 'lucide-react';
-import type { BeautyCategory, CreatorPick, Place } from '../types';
-import { categoryMeta } from '../data/mock';
-import { ENABLED_MAP_CATEGORIES } from '../data/mapCategories';
-import { fetchCreatorPicks, fetchPlaces } from '../services/places';
-import { searchPlacesByCategory } from '../services/discovery';
+import type { BeautyCategory, CreatorPick, Place } from '../../types';
+import { categoryMeta } from '../../data/mock';
+import { ENABLED_MAP_CATEGORIES } from '../../data/mapCategories';
+import { fetchCreatorPicks, fetchPlaces } from '../../services/places';
+import { searchPlacesByCategory } from '../../services/discovery';
 
 // Adapted from extract/src/components/MapView.tsx (Sniffood map + login kit).
 // Same Leaflet/MapTiler setup and custom controls; filter modes and pin data

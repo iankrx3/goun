@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Sparkles } from 'lucide-react';
-import type { Place } from '../types';
-import { groundPlaceInfo, isGeminiAvailable, type GroundedPlaceInfo } from '../services/gemini';
+import type { Place } from '../../types';
+import { groundPlaceInfo, isGeminiAvailable, type GroundedPlaceInfo } from '../../services/gemini';
 
 /**
  * "Get latest info" — an opt-in (not automatic) lookup so a Gemini call only

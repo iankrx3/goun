@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Sparkles, CheckCircle2, AlertCircle, User } from 'lucide-react';
-import { isSupabaseConfigured, signInWithGoogle, type AuthReturnTab } from '../services/auth';
+import { isSupabaseConfigured, signInWithGoogle, type AuthReturnTab } from '../../services/auth';
 
 interface GoogleAuthModalProps {
   isOpen: boolean;

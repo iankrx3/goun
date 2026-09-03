@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { GEMINI_BASE, GEMINI_MODEL } from '../_lib/proxy.js';
+import { GEMINI_BASE, GEMINI_MODEL } from '../../shared/apiProxy.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {

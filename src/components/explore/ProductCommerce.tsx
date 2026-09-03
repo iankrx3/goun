@@ -1,5 +1,5 @@
 import React from 'react';
-import { defaultProducts, mockProducts } from '../data/products';
+import { defaultProducts, mockProducts } from '../../data/products';
 
 interface ProductCommerceProps {
   concerns: string[];

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Megaphone } from 'lucide-react';
-import type { Place } from '../types';
+import type { Place } from '../../types';
 import { PlaceCard } from './PlaceCard';
 
 export const AdBadge: React.FC<{ label: string }> = ({ label }) => (

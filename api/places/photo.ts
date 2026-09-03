@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { PLACES_BASE } from '../_lib/proxy.js';
+import { PLACES_BASE } from '../../shared/apiProxy.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const googleKey = process.env.GOOGLE_PLACES_API_KEY;

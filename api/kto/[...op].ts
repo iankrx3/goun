@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { KTO_BASE, KTO_OPS, decodeServiceKey } from '../_lib/proxy.js';
+import { KTO_BASE, KTO_OPS, decodeServiceKey } from '../../shared/apiProxy.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const ktoKey = process.env.KTO_SERVICE_KEY;

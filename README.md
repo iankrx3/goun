@@ -1,17 +1,18 @@
 # Miyeon (미연)
 
 AI Korean Beauty Discovery & Booking Platform — Core UX per the MIYEON product spec
-(Explore → Personalize → SNIFF → AI Match → Book / Shop). Map and Google login are ported
-from `extract/` (the Sniffood map+login kit).
+(Explore → Personalize → SNIFF → AI Match → Book / Shop). Map and Google login were
+originally ported from an external "Sniffood" map+login starter kit (referenced during
+initial porting; not part of this repository).
 
 ## Stack
 
 Vite + React + TypeScript + Tailwind + React Router. Supabase (auth + data) and
-Leaflet/MapTiler (map), matching `extract/README.md`. Chosen over the PRD's
-Next.js listing (§13) to reuse the extract kit directly instead of rewriting
-its Vite-specific auth/map code for the App Router.
+Leaflet/MapTiler (map). Chosen over the PRD's Next.js listing (§13) to reuse the
+original starter kit's Vite-specific auth/map code directly instead of rewriting
+it for the App Router.
 
-레이어별 기능 설명: [`docs/architecture.md`](docs/architecture.md).
+레이어별 기능 설명: [`docs/architecture/`](docs/architecture/README.md).
 
 ## Getting started
 
@@ -40,7 +41,7 @@ GEMINI_API_KEY=           # Google AI Studio / Gemini API — optional, powers "
 
 - KTO key: [한국관광공사_의료관광정보](https://www.data.go.kr/data/15143913/openapi.do) → 활용신청. Use the Decoding or Encoding key; the proxy normalises either.
 - Google key: enable **Places API (New)** on a Cloud project. Restrict it to `localhost` HTTP referrers for local work.
-- Gemini key: from [Google AI Studio](https://aistudio.google.com/apikey). Place detail keeps Google Places + KTO as its data source; Gemini is only called on demand (the "Get latest info" button, `src/components/GroundedInfo.tsx`) with the Google Search grounding tool enabled, to surface things Places/KTO don't carry (hours changes, closures, recent notes). Without this key the button is hidden — fail-silent, like the KTO badges.
+- Gemini key: from [Google AI Studio](https://aistudio.google.com/apikey). Place detail keeps Google Places + KTO as its data source; Gemini is only called on demand (the "Get latest info" button, `src/components/place/GroundedInfo.tsx`) with the Google Search grounding tool enabled, to surface things Places/KTO don't carry (hours changes, closures, recent notes). Without this key the button is hidden — fail-silent, like the KTO badges.
 
 `src/services/discovery.ts` maps each beauty category to Google Place types and,
 for `skin` / `face`, overlays KTO-certified medical-tourism orgs (badge +
@@ -54,19 +55,18 @@ quota on data.go.kr is 1,000 calls/day — results are cached for 10 minutes.
 - **Explore** (`src/pages/ExplorePage.tsx`) — Home → WHAT → VIBE → Constraints →
   AI transition → Top 3 matches, per PRD §2. The VIBE pair-choice screen shows
   an "OR" badge between each pair so it reads as a binary choice, not a grid.
-- **Map** (`src/pages/MapPage.tsx`, `src/components/MapView.tsx`) — ported from
-  `extract/src/components/MapView.tsx`; category/pick filters, search,
-  geolocation, and a Warm-Taupe KTO Wellness pin layer per §15.3. Only
+- **Map** (`src/pages/MapPage.tsx`, `src/components/map/MapView.tsx`) — category/pick
+  filters, search, geolocation, and a Warm-Taupe KTO Wellness pin layer per §15.3. Only
   `skin`/`face` categories are shown for now (`src/data/mapCategories.ts`) —
   hair/nails/makeup are still being built out. Search combines the already-loaded
   local places with a live, debounced Google Places text search constrained to
   `skin`/`face` place types (`services/discovery.ts#searchPlacesByCategory`), so
   typing a real business name finds it even if it isn't in the loaded set;
   picking a live result drops a new pin on the map. A map/list toggle
-  (bottom-left) switches to `components/PlaceListView.tsx`, a scrollable,
+  (bottom-left) switches to `components/map/PlaceListView.tsx`, a scrollable,
   rating-sorted list of the same places.
 - **Login** (`src/hooks/useAuth.ts`, `src/services/auth.ts`,
-  `src/components/GoogleAuthModal.tsx`) — Google OAuth when Supabase is
+  `src/components/auth/GoogleAuthModal.tsx`) — Google OAuth when Supabase is
   configured, plus a local **Continue as demo** session that does not need keys.
 - **Place discovery** (`src/services/discovery.ts`) — category engine over
   Google Places API (New) + KTO `MdclTursmService`. Vite proxy in
@@ -75,7 +75,7 @@ quota on data.go.kr is 1,000 calls/day — results are cached for 10 minutes.
   (§7.2/§7.3), fail-silent when their data is absent. Get-directions links to
   Google/Naver/Kakao Maps (`src/lib/directions.ts`), and an opt-in "Get latest
   info" lookup backed by Gemini + Google Search grounding
-  (`src/components/GroundedInfo.tsx`) for anything Places/KTO don't cover.
+  (`src/components/place/GroundedInfo.tsx`) for anything Places/KTO don't cover.
 - **Creatrip affiliate links** (`src/lib/creatrip.ts`) — Book-with-Creatrip CTAs
   (`ResultCard`, `PlaceDetailPage`, `TreatmentDetailPage`) are tagged with the
   Creatrip affiliate ID (`utm_source`/`aff_id` query params) and show a short
@@ -104,7 +104,7 @@ quota on data.go.kr is 1,000 calls/day — results are cached for 10 minutes.
 - **AI matching** (`src/services/match.ts`) — a transparent client-side scorer
   implementing the §9 fit formula, standing in for the real LLM ranking engine
   in §13 until one exists.
-- **Mobile bottom nav** (`src/components/BottomNav.tsx`) — below the `sm`
+- **Mobile bottom nav** (`src/components/layout/BottomNav.tsx`) — below the `sm`
   breakpoint, the top tab bar (`NavHeader`) hides and a thumb-reachable bottom
   tab bar takes over; desktop keeps the top nav.
 - Brand design tokens (Soft Cocoa / Dusty Rose / Soft Blush / Warm Beige / White) and

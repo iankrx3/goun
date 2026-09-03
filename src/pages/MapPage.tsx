@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bookmark, List, Map as MapIcon, Star, X } from 'lucide-react';
-import { MapView } from '../components/MapView';
-import { PlaceListView } from '../components/PlaceListView';
+import { MapView } from '../components/map/MapView';
+import { PlaceListView } from '../components/map/PlaceListView';
 import { useSavedPlaces } from '../hooks/useSavedPlaces';
 import type { Place } from '../types';
 

@@ -1,35 +1,14 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { Plugin, ViteDevServer } from 'vite';
-
-const KTO_BASE = 'https://apis.data.go.kr/B551011/MdclTursmService';
-const PLACES_BASE = 'https://places.googleapis.com/v1';
-const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta';
-const GEMINI_MODEL = 'gemini-2.5-flash';
-const KTO_OPS = new Set([
-  'searchKeyword',
-  'locationBasedList',
-  'areaBasedList',
-  'detailCommon',
-  'detailMdclTursm',
-  'detailIntro',
-  'ldongCode',
-]);
-
-const PLACES_FIELD_MASK = [
-  'places.id',
-  'places.displayName',
-  'places.formattedAddress',
-  'places.location',
-  'places.rating',
-  'places.userRatingCount',
-  'places.photos',
-  'places.priceLevel',
-  'places.types',
-  'places.primaryType',
-  'places.nationalPhoneNumber',
-  'places.websiteUri',
-  'places.googleMapsUri',
-].join(',');
+import {
+  KTO_BASE,
+  PLACES_BASE,
+  GEMINI_BASE,
+  GEMINI_MODEL,
+  KTO_OPS,
+  PLACES_FIELD_MASK,
+  decodeServiceKey,
+} from '../shared/apiProxy.js';
 
 export interface MiyeonApiProxyOptions {
   ktoKey?: string;
@@ -50,14 +29,6 @@ function readBody(req: IncomingMessage): Promise<string> {
     req.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
     req.on('error', reject);
   });
-}
-
-function decodeServiceKey(raw: string): string {
-  try {
-    return raw.includes('%') ? decodeURIComponent(raw) : raw;
-  } catch {
-    return raw;
-  }
 }
 
 async function handleKto(url: URL, res: ServerResponse, ktoKey: string) {

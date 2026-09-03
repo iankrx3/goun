@@ -1,8 +1,8 @@
 import React from 'react';
 import { Bookmark, Star } from 'lucide-react';
-import type { Place } from '../types';
-import { categoryMeta } from '../data/mock';
-import { MedicalInfoBadge, WellnessPickBadge } from './badges/KtoBadges';
+import type { Place } from '../../types';
+import { categoryMeta } from '../../data/mock';
+import { MedicalInfoBadge, WellnessPickBadge } from '../badges/KtoBadges';
 
 interface PlaceCardProps {
   place: Place;

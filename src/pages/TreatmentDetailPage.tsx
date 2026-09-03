@@ -4,6 +4,7 @@ import { ChevronLeft } from 'lucide-react';
 import type { Place, Treatment } from '../types';
 import { fetchPlaceById, fetchTreatmentById } from '../services/places';
 import { withCreatripAffiliate, CREATRIP_BASE_URL, CREATRIP_DISCLOSURE } from '../lib/creatrip';
+import { TreatmentExplainer } from '../components/treatment/TreatmentExplainer';
 
 export default function TreatmentDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -36,6 +37,8 @@ export default function TreatmentDetailPage() {
         <h1 className="font-display text-3xl text-miyeon-main">{treatment.name}</h1>
         <p className="mt-2 text-sm text-miyeon-main/70">{treatment.expectedResult}</p>
       </div>
+
+      <TreatmentExplainer treatment={treatment} />
 
       <div className="grid grid-cols-2 gap-3 text-sm">
         <Fact label="Price" value={`$${treatment.price.min}–$${treatment.price.max}`} />

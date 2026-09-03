@@ -12,5 +12,5 @@
     "strict": true,
     "types": ["node"]
   },
-  "include": ["vite.config.ts", "plugins"]
+  "include": ["vite.config.ts", "plugins", "shared"]
 }

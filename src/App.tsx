@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
-import { NavHeader } from './components/NavHeader';
-import { BottomNav } from './components/BottomNav';
-import { GoogleAuthModal } from './components/GoogleAuthModal';
+import { NavHeader } from './components/layout/NavHeader';
+import { BottomNav } from './components/layout/BottomNav';
+import { GoogleAuthModal } from './components/auth/GoogleAuthModal';
 import { useAuth } from './hooks/useAuth';
 import ExplorePage from './pages/ExplorePage';
 import MapPage from './pages/MapPage';

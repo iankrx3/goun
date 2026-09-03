@@ -1,7 +1,7 @@
 export const KTO_BASE = 'https://apis.data.go.kr/B551011/MdclTursmService';
 export const PLACES_BASE = 'https://places.googleapis.com/v1';
 export const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta';
-export const GEMINI_MODEL = 'gemini-3.6-flash';
+export const GEMINI_MODEL = 'gemini-2.5-flash';
 
 export const KTO_OPS = new Set([
   'searchKeyword',

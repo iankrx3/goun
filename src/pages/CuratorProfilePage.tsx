@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ChevronLeft, Globe, Instagram, MapPin, Music2 } from 'lucide-react';
 import type { Creator, CreatorPick, Place } from '../types';
 import { fetchCreatorById, fetchCreatorPicksByCreatorId } from '../services/places';
-import { PlaceCard } from '../components/PlaceCard';
+import { PlaceCard } from '../components/place/PlaceCard';
 
 export default function CuratorProfilePage() {
   const { id } = useParams<{ id: string }>();

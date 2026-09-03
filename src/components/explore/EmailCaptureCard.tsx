@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { saveLead } from '../services/leads';
-import type { QuizAnswers } from '../types';
+import { saveLead } from '../../services/leads';
+import type { QuizAnswers } from '../../types';
 
 interface EmailCaptureCardProps {
   answers: QuizAnswers;

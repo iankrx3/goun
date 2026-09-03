@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
-import type { UserSession } from '../types';
+import type { UserSession } from '../../types';
 
 interface NavHeaderProps {
   session: UserSession;

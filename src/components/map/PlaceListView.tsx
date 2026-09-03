@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { Place } from '../types';
-import { fetchPlaces } from '../services/places';
-import { ENABLED_MAP_CATEGORIES } from '../data/mapCategories';
-import { hasCreatripListing } from '../lib/creatrip';
-import { PlaceCard } from './PlaceCard';
-import { AdBadge, SponsoredPlaceCard } from './SponsoredPlaceCard';
+import type { Place } from '../../types';
+import { fetchPlaces } from '../../services/places';
+import { ENABLED_MAP_CATEGORIES } from '../../data/mapCategories';
+import { hasCreatripListing } from '../../lib/creatrip';
+import { PlaceCard } from '../place/PlaceCard';
+import { AdBadge, SponsoredPlaceCard } from '../place/SponsoredPlaceCard';
 
 export const PlaceListView: React.FC = () => {
   const navigate = useNavigate();

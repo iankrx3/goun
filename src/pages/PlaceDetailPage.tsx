@@ -6,7 +6,7 @@ import { fetchPlaceById, fetchTreatments } from '../services/places';
 import { fetchCommunityPosts } from '../services/community';
 import { useSavedPlaces } from '../hooks/useSavedPlaces';
 import { MedicalTourismSection, NearbyWellnessSection } from '../components/badges/KtoBadges';
-import { GroundedInfo } from '../components/GroundedInfo';
+import { GroundedInfo } from '../components/place/GroundedInfo';
 import { getDirectionsLinks } from '../lib/directions';
 import { withCreatripAffiliate, CREATRIP_BASE_URL, CREATRIP_DISCLOSURE } from '../lib/creatrip';
 
