@@ -8,6 +8,7 @@ import {
   signInAsDemo as authSignInAsDemo,
   signOut as authSignOut,
 } from '../services/auth';
+import { mergeLocalCreator } from '../lib/localCuratorStore';
 
 export function useAuth() {
   const [authReady, setAuthReady] = useState(false);
@@ -16,7 +17,7 @@ export function useAuth() {
 
   useEffect(() => {
     if (!supabase) {
-      setSession(loadMockSession() ?? { isLoggedIn: false });
+      setSession(mergeLocalCreator(loadMockSession() ?? { isLoggedIn: false }));
       setAuthReady(true);
       return;
     }
@@ -30,13 +31,13 @@ export function useAuth() {
       if (!mounted) return;
       const next = await buildUserSession(data.session?.user ?? null);
       if (next.isLoggedIn) {
-        setSession(next);
+        setSession(mergeLocalCreator(next));
         const tab = consumeReturnTab();
         if (tab) setReturnTab(tab);
         setAuthReady(true);
         return;
       }
-      setSession(loadMockSession() ?? { isLoggedIn: false });
+      setSession(mergeLocalCreator(loadMockSession() ?? { isLoggedIn: false }));
       if (!isAuthCallback) setAuthReady(true);
     });
 
@@ -45,14 +46,16 @@ export function useAuth() {
     } = supabase.auth.onAuthStateChange((event, authSession) => {
       if (event === 'SIGNED_OUT' || !authSession?.user) {
         if (event === 'INITIAL_SESSION' && isAuthCallback) return;
-        setSession(event === 'SIGNED_OUT' ? { isLoggedIn: false } : loadMockSession() ?? { isLoggedIn: false });
+        setSession(
+          event === 'SIGNED_OUT' ? { isLoggedIn: false } : mergeLocalCreator(loadMockSession() ?? { isLoggedIn: false })
+        );
         setAuthReady(true);
         return;
       }
 
       void buildUserSession(authSession.user).then((next) => {
         if (!mounted) return;
-        setSession(next);
+        setSession(mergeLocalCreator(next));
         if (event === 'SIGNED_IN') {
           const tab = consumeReturnTab();
           if (tab) setReturnTab(tab);
@@ -68,7 +71,7 @@ export function useAuth() {
   }, []);
 
   const signInAsDemo = () => {
-    setSession(authSignInAsDemo());
+    setSession(mergeLocalCreator(authSignInAsDemo()));
   };
 
   const signOut = async () => {

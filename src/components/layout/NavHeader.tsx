@@ -41,15 +41,23 @@ export const NavHeader: React.FC<NavHeaderProps> = ({ session, onSignIn, onSignO
       </nav>
 
       {session.isLoggedIn && session.user ? (
-        <button onClick={onSignOut} className="flex items-center gap-2 text-xs font-semibold text-miyeon-main">
-          <img
-            src={session.user.avatar_url}
-            alt={session.user.name}
-            referrerPolicy="no-referrer"
-            className="h-7 w-7 rounded-full object-cover ring-1 ring-miyeon-neutral"
-          />
-          <span className="hidden sm:inline">Sign out</span>
-        </button>
+        <div className="flex items-center gap-3">
+          <NavLink
+            to={session.creator ? `/curator/${session.creator.id}` : '/curator/signup'}
+            className="hidden text-xs font-semibold text-miyeon-main/70 hover:text-miyeon-main sm:inline"
+          >
+            {session.creator ? 'My Curator Page' : 'Become a Curator'}
+          </NavLink>
+          <button onClick={onSignOut} className="flex items-center gap-2 text-xs font-semibold text-miyeon-main">
+            <img
+              src={session.user.avatar_url}
+              alt={session.user.name}
+              referrerPolicy="no-referrer"
+              className="h-7 w-7 rounded-full object-cover ring-1 ring-miyeon-neutral"
+            />
+            <span className="hidden sm:inline">Sign out</span>
+          </button>
+        </div>
       ) : (
         <button
           onClick={onSignIn}

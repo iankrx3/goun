@@ -11,10 +11,13 @@ import PlaceDetailPage from './pages/PlaceDetailPage';
 import TreatmentDetailPage from './pages/TreatmentDetailPage';
 import PostDetailPage from './pages/PostDetailPage';
 import CuratorProfilePage from './pages/CuratorProfilePage';
+import CuratorSignupPage from './pages/CuratorSignupPage';
+import CuratorEditPage from './pages/CuratorEditPage';
+import CuratorListPage from './pages/CuratorListPage';
 import type { AuthReturnTab } from './services/auth';
 
 export default function App() {
-  const { authReady, session, returnTab, signOut, signInAsDemo } = useAuth();
+  const { authReady, session, returnTab, signOut, signInAsDemo, onCreatorUpdated } = useAuth();
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const location = useLocation();
 
@@ -55,7 +58,18 @@ export default function App() {
           />
           <Route path="/place/:id" element={<PlaceDetailPage />} />
           <Route path="/treatment/:id" element={<TreatmentDetailPage />} />
-          <Route path="/curator/:id" element={<CuratorProfilePage />} />
+          <Route
+            path="/curator/signup"
+            element={
+              <CuratorSignupPage session={session} onSignIn={() => setIsAuthOpen(true)} onCreatorUpdated={onCreatorUpdated} />
+            }
+          />
+          <Route path="/curator/:id" element={<CuratorProfilePage session={session} />} />
+          <Route
+            path="/curator/:id/edit"
+            element={<CuratorEditPage session={session} onCreatorUpdated={onCreatorUpdated} />}
+          />
+          <Route path="/curator/:id/lists/:listId" element={<CuratorListPage session={session} />} />
         </Routes>
       </main>
 

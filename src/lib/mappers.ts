@@ -1,5 +1,5 @@
 import type { User } from '@supabase/supabase-js';
-import { CommunityPost, Creator, Place, PostComment, UserSession } from '../types';
+import { CommunityPost, Creator, CuratorList, ListSpot, Place, PostComment, UserSession } from '../types';
 
 export function mapPlace(row: any): Place {
   return {
@@ -41,6 +41,30 @@ export function mapCreator(row: any, picksCount?: number): Creator {
     tiktok_url: row.tiktok_url ?? undefined,
     website_url: row.website_url ?? undefined,
     picks_count: picksCount ?? row.picks_count ?? 0,
+    created_at: row.created_at,
+  };
+}
+
+export function mapCuratorList(row: any, spotCount?: number): CuratorList {
+  return {
+    id: row.id,
+    curator_id: row.curator_id,
+    title: row.title,
+    description: row.description ?? undefined,
+    cover_photo_url: row.cover_photo_url ?? undefined,
+    spot_count: spotCount ?? row.spot_count ?? 0,
+    created_at: row.created_at,
+  };
+}
+
+export function mapListSpot(row: any): ListSpot {
+  return {
+    id: row.id,
+    list_id: row.list_id,
+    place_id: row.place_id,
+    place: mapPlace(row.place),
+    note: row.note ?? undefined,
+    position: row.position ?? 0,
     created_at: row.created_at,
   };
 }

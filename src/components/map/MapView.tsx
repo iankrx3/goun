@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Locate, Loader2, Search, X, ChevronRight, ChevronDown, Plus, Minus } from 'lucide-react';
-import type { BeautyCategory, CreatorPick, Place } from '../../types';
+import type { BeautyCategory, Creator, CreatorPick, Place } from '../../types';
 import { categoryMeta } from '../../data/mock';
 import { ENABLED_MAP_CATEGORIES } from '../../data/mapCategories';
 import { fetchCreatorPicks, fetchPlaces } from '../../services/places';
 import { searchPlacesByCategory } from '../../services/discovery';
+import { fetchCuratorById, fetchCuratorLists, fetchListById, fetchListSpots } from '../../services/curator';
 
 // Adapted from extract/src/components/MapView.tsx (Sniffood map + login kit).
 // Same Leaflet/MapTiler setup and custom controls; filter modes and pin data
@@ -36,6 +37,7 @@ const PICK_FILTERS: { id: PickFilter; label: string }[] = [
 
 export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
@@ -60,6 +62,61 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isLocating, setIsLocating] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
+
+  const curatorIdParam = searchParams.get('curator');
+  const listIdParam = searchParams.get('list');
+  const curatorFilterActive = Boolean(curatorIdParam || listIdParam);
+  const [curatorFilterPlaces, setCuratorFilterPlaces] = useState<Place[]>([]);
+  const [curatorFilterCreator, setCuratorFilterCreator] = useState<Creator | null>(null);
+  const [curatorFilterListTitle, setCuratorFilterListTitle] = useState<string | null>(null);
+
+  // "View this curator/list on the map" — reuses the same marker-rendering
+  // effect below by feeding getFilteredPlaces() a curator-scoped Place[]
+  // instead of the category/picks-filtered one.
+  useEffect(() => {
+    if (!curatorFilterActive) {
+      setCuratorFilterPlaces([]);
+      setCuratorFilterCreator(null);
+      setCuratorFilterListTitle(null);
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      if (listIdParam) {
+        const [list, spots] = await Promise.all([fetchListById(listIdParam), fetchListSpots(listIdParam)]);
+        if (cancelled) return;
+        setCuratorFilterListTitle(list?.title ?? 'List');
+        setCuratorFilterPlaces(spots.map((s) => s.place));
+        const creator = list ? await fetchCuratorById(list.curator_id) : null;
+        if (!cancelled) setCuratorFilterCreator(creator);
+        return;
+      }
+
+      if (curatorIdParam) {
+        const [creator, lists] = await Promise.all([fetchCuratorById(curatorIdParam), fetchCuratorLists(curatorIdParam)]);
+        if (cancelled) return;
+        setCuratorFilterCreator(creator);
+        setCuratorFilterListTitle(null);
+        const spotLists = await Promise.all(lists.map((l) => fetchListSpots(l.id)));
+        if (cancelled) return;
+        const seen = new Set<string>();
+        const merged: Place[] = [];
+        for (const spots of spotLists) {
+          for (const spot of spots) {
+            if (seen.has(spot.place.id)) continue;
+            seen.add(spot.place.id);
+            merged.push(spot.place);
+          }
+        }
+        setCuratorFilterPlaces(merged);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [curatorFilterActive, curatorIdParam, listIdParam]);
 
   useEffect(() => {
     setLoading(true);
@@ -109,6 +166,7 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
   }, []);
 
   const getFilteredPlaces = useCallback((): Place[] => {
+    if (curatorFilterActive) return curatorFilterPlaces;
     let result = places;
     if (filterMode === 'category' && selectedCategory !== 'all') {
       result = result.filter((p) => p.category === selectedCategory);
@@ -119,7 +177,7 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
       );
     }
     return result;
-  }, [places, filterMode, selectedCategory, selectedPick]);
+  }, [places, filterMode, selectedCategory, selectedPick, curatorFilterActive, curatorFilterPlaces]);
 
   useEffect(() => {
     const map = mapInstanceRef.current;
@@ -384,46 +442,70 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
 
         {!(isSearchOpen && searchQuery) && (
           <div className="pointer-events-auto space-y-2">
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-              {([
-                { id: 'category' as FilterMode, label: 'Category' },
-                { id: 'picks' as FilterMode, label: 'Picks' },
-              ]).map((mode) => (
-                <button
-                  key={mode.id}
-                  onClick={() => handleSetFilterMode(mode.id)}
-                  className={`rounded-full px-3.5 py-1.5 text-[11px] font-bold shadow-sm backdrop-blur-md transition-all whitespace-nowrap ${
-                    filterMode === mode.id ? 'bg-miyeon-main text-white' : 'bg-white/90 text-miyeon-main/70 hover:bg-white'
-                  }`}
-                >
-                  {mode.label}
-                </button>
-              ))}
-            </div>
-
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-              {filterMode === 'category'
-                ? CATEGORY_FILTERS.map((cat) => (
-                    <FilterChip
-                      key={cat.id}
-                      active={selectedCategory === cat.id}
-                      label={cat.label}
-                      onClick={() => setSelectedCategory(cat.id)}
-                    />
-                  ))
-                : PICK_FILTERS.map((pick) => (
-                    <FilterChip
-                      key={pick.id}
-                      active={selectedPick === pick.id}
-                      label={pick.label}
-                      onClick={() => setSelectedPick(pick.id)}
-                    />
+            {curatorFilterActive ? (
+              <div className="flex items-center justify-between gap-2 rounded-2xl border border-white/60 bg-white/95 px-3.5 py-2.5 shadow-lg backdrop-blur-md">
+                <p className="truncate text-xs font-semibold text-miyeon-main">
+                  {curatorFilterListTitle
+                    ? `Showing "${curatorFilterListTitle}"${curatorFilterCreator ? ` by @${curatorFilterCreator.username}` : ''}`
+                    : curatorFilterCreator
+                      ? `Showing ${curatorFilterCreator.display_name}'s spots`
+                      : 'Showing curated spots'}
+                </p>
+                <div className="flex shrink-0 items-center gap-3">
+                  {curatorFilterCreator && (
+                    <Link to={`/curator/${curatorFilterCreator.id}`} className="text-[11px] font-semibold text-miyeon-sub1">
+                      Profile
+                    </Link>
+                  )}
+                  <button onClick={() => setSearchParams({})} aria-label="Clear filter" className="text-miyeon-main/50">
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                  {([
+                    { id: 'category' as FilterMode, label: 'Category' },
+                    { id: 'picks' as FilterMode, label: 'Picks' },
+                  ]).map((mode) => (
+                    <button
+                      key={mode.id}
+                      onClick={() => handleSetFilterMode(mode.id)}
+                      className={`rounded-full px-3.5 py-1.5 text-[11px] font-bold shadow-sm backdrop-blur-md transition-all whitespace-nowrap ${
+                        filterMode === mode.id ? 'bg-miyeon-main text-white' : 'bg-white/90 text-miyeon-main/70 hover:bg-white'
+                      }`}
+                    >
+                      {mode.label}
+                    </button>
                   ))}
-            </div>
+                </div>
+
+                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+                  {filterMode === 'category'
+                    ? CATEGORY_FILTERS.map((cat) => (
+                        <FilterChip
+                          key={cat.id}
+                          active={selectedCategory === cat.id}
+                          label={cat.label}
+                          onClick={() => setSelectedCategory(cat.id)}
+                        />
+                      ))
+                    : PICK_FILTERS.map((pick) => (
+                        <FilterChip
+                          key={pick.id}
+                          active={selectedPick === pick.id}
+                          label={pick.label}
+                          onClick={() => setSelectedPick(pick.id)}
+                        />
+                      ))}
+                </div>
+              </>
+            )}
           </div>
         )}
 
-        {creatorPicks.length > 0 && !(isSearchOpen && searchQuery) && (
+        {creatorPicks.length > 0 && !curatorFilterActive && !(isSearchOpen && searchQuery) && (
           <div className="pointer-events-auto rounded-2xl bg-white/90 shadow-lg backdrop-blur-md border border-white/60">
             <button
               onClick={() => setIsCreatorPicksExpanded((prev) => !prev)}

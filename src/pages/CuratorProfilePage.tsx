@@ -1,29 +1,50 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { ChevronLeft, Globe, Instagram, MapPin, Music2 } from 'lucide-react';
-import type { Creator, CreatorPick, Place } from '../types';
-import { fetchCreatorById, fetchCreatorPicksByCreatorId } from '../services/places';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { ChevronLeft, Globe, Instagram, ListPlus, MapPin, Music2, Pencil } from 'lucide-react';
+import type { Creator, CreatorPick, CuratorList, Place, UserSession } from '../types';
+import { fetchCreatorPicksByCreatorId } from '../services/places';
+import { createList, fetchCuratorById, fetchCuratorLists } from '../services/curator';
 import { PlaceCard } from '../components/place/PlaceCard';
 
-export default function CuratorProfilePage() {
+interface CuratorProfilePageProps {
+  session: UserSession;
+}
+
+export default function CuratorProfilePage({ session }: CuratorProfilePageProps) {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [creator, setCreator] = useState<Creator | null>(null);
+  const [lists, setLists] = useState<CuratorList[]>([]);
   const [picks, setPicks] = useState<CreatorPick[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isCreatingList, setIsCreatingList] = useState(false);
+  const [newListTitle, setNewListTitle] = useState('');
+
+  const isOwner = Boolean(id && session.creator?.id === id);
 
   useEffect(() => {
     if (!id) return;
     setLoading(true);
-    Promise.all([fetchCreatorById(id), fetchCreatorPicksByCreatorId(id)])
-      .then(([c, p]) => {
+    Promise.all([fetchCuratorById(id), fetchCuratorLists(id), fetchCreatorPicksByCreatorId(id)])
+      .then(([c, l, p]) => {
         setCreator(c);
+        setLists(l);
         setPicks(p);
       })
       .finally(() => setLoading(false));
   }, [id]);
 
   const viewPlace = (place: Place) => navigate(`/place/${place.id}`);
+
+  const totalSpots = lists.reduce((sum, l) => sum + l.spot_count, 0);
+
+  const handleCreateList = async () => {
+    if (!newListTitle.trim() || !id) return;
+    const list = await createList(session, { title: newListTitle.trim() });
+    setNewListTitle('');
+    setIsCreatingList(false);
+    navigate(`/curator/${id}/lists/${list.id}`);
+  };
 
   if (loading) return <div className="px-4 py-10 text-sm text-miyeon-main/60">Loading…</div>;
   if (!creator) return <div className="px-4 py-10 text-sm text-miyeon-main/60">Curator not found.</div>;
@@ -49,7 +70,7 @@ export default function CuratorProfilePage() {
         {creator.bio && <p className="mt-3 max-w-md text-sm text-miyeon-main/80">{creator.bio}</p>}
 
         <div className="mt-3 flex items-center gap-2 text-xs font-semibold text-miyeon-main/60">
-          <MapPin className="h-3.5 w-3.5" /> {creator.picks_count} place{creator.picks_count === 1 ? '' : 's'} curated
+          <MapPin className="h-3.5 w-3.5" /> {totalSpots} spot{totalSpots === 1 ? '' : 's'} curated
         </div>
 
         {(creator.instagram_url || creator.tiktok_url || creator.website_url) && (
@@ -89,13 +110,85 @@ export default function CuratorProfilePage() {
             )}
           </div>
         )}
+
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+          <Link
+            to={`/map?curator=${creator.id}`}
+            className="flex items-center gap-1.5 rounded-full border border-miyeon-neutral px-3.5 py-1.5 text-xs font-semibold text-miyeon-main hover:border-miyeon-sub1/50"
+          >
+            <MapPin className="h-3.5 w-3.5" /> View on map
+          </Link>
+          {isOwner && (
+            <>
+              <Link
+                to={`/curator/${creator.id}/edit`}
+                className="flex items-center gap-1.5 rounded-full border border-miyeon-neutral px-3.5 py-1.5 text-xs font-semibold text-miyeon-main hover:border-miyeon-sub1/50"
+              >
+                <Pencil className="h-3.5 w-3.5" /> Edit profile
+              </Link>
+              <button
+                onClick={() => setIsCreatingList((prev) => !prev)}
+                className="flex items-center gap-1.5 rounded-full bg-miyeon-sub1 px-3.5 py-1.5 text-xs font-bold text-white shadow-sm shadow-miyeon-sub1/30"
+              >
+                <ListPlus className="h-3.5 w-3.5" /> New list
+              </button>
+            </>
+          )}
+        </div>
+
+        {isOwner && isCreatingList && (
+          <div className="mt-3 flex w-full max-w-xs items-center gap-2">
+            <input
+              autoFocus
+              value={newListTitle}
+              onChange={(e) => setNewListTitle(e.target.value)}
+              placeholder="List name…"
+              className="w-full rounded-full border border-miyeon-neutral bg-white px-3.5 py-2 text-sm text-miyeon-main placeholder:text-miyeon-main/40 focus:outline-none"
+            />
+            <button
+              onClick={handleCreateList}
+              className="shrink-0 rounded-full bg-miyeon-sub1 px-3.5 py-2 text-xs font-bold text-white"
+            >
+              Create
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="mt-8">
-        <h2 className="text-sm font-semibold text-miyeon-main">Places curated by {creator.display_name}</h2>
-        {picks.length === 0 ? (
-          <p className="mt-2 text-sm text-miyeon-main/60">No places curated yet.</p>
+        <h2 className="text-sm font-semibold text-miyeon-main">Lists</h2>
+        {lists.length === 0 ? (
+          <p className="mt-2 text-sm text-miyeon-main/60">No lists yet.</p>
         ) : (
+          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {lists.map((list) => (
+              <Link
+                key={list.id}
+                to={`/curator/${creator.id}/lists/${list.id}`}
+                className="overflow-hidden rounded-2xl border border-miyeon-neutral bg-white shadow-sm"
+              >
+                {list.cover_photo_url ? (
+                  <img src={list.cover_photo_url} alt={list.title} className="h-24 w-full object-cover" />
+                ) : (
+                  <div className="flex h-24 w-full items-center justify-center bg-miyeon-neutral/50 text-miyeon-main/30">
+                    <MapPin className="h-6 w-6" />
+                  </div>
+                )}
+                <div className="p-2.5">
+                  <p className="truncate text-sm font-semibold text-miyeon-main">{list.title}</p>
+                  <p className="text-[11px] text-miyeon-main/50">
+                    {list.spot_count} spot{list.spot_count === 1 ? '' : 's'}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {picks.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-sm font-semibold text-miyeon-main">All picks</h2>
           <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {picks.map((pick) => (
               <div key={pick.id} className="space-y-1.5">
@@ -106,8 +199,8 @@ export default function CuratorProfilePage() {
               </div>
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

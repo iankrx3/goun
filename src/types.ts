@@ -94,6 +94,26 @@ export interface Place {
   ktoContentId?: string;
 }
 
+export interface CuratorList {
+  id: string;
+  curator_id: string;
+  title: string;
+  description?: string;
+  cover_photo_url?: string;
+  spot_count: number;
+  created_at: string;
+}
+
+export interface ListSpot {
+  id: string;
+  list_id: string;
+  place_id: string;
+  place: Place;
+  note?: string;
+  position: number;
+  created_at: string;
+}
+
 export interface MatchResult {
   treatment: Treatment;
   place: Place;
