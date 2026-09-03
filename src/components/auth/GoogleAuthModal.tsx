@@ -19,8 +19,6 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (!isOpen) return null;
-
   const handleGoogleSignIn = async () => {
     setError(null);
     if (!isSupabaseConfigured) {
@@ -45,6 +43,7 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
 
   return (
     <AnimatePresence>
+      {isOpen && (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0 }}
@@ -124,6 +123,7 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
           </div>
         </motion.div>
       </div>
+      )}
     </AnimatePresence>
   );
 };

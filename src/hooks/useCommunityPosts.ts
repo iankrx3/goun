@@ -7,6 +7,7 @@ import {
   fetchCommunityPosts,
   toggleLike as toggleLikeService,
 } from '../services/community';
+import { fetchCreatorIdsByUserIds } from '../services/places';
 
 export function useCommunityPosts(session: UserSession) {
   const [posts, setPosts] = useState<CommunityPost[]>([]);
@@ -15,7 +16,11 @@ export function useCommunityPosts(session: UserSession) {
   const refresh = useCallback(() => {
     setLoading(true);
     fetchCommunityPosts(session.user?.id)
-      .then(setPosts)
+      .then(async (fetched) => {
+        const authorIds = fetched.map((p) => p.authorId).filter((id): id is string => Boolean(id));
+        const creatorIdMap = await fetchCreatorIdsByUserIds(authorIds);
+        setPosts(fetched.map((p) => ({ ...p, creatorId: p.authorId ? creatorIdMap.get(p.authorId) : undefined })));
+      })
       .finally(() => setLoading(false));
   }, [session.user?.id]);
 
@@ -26,8 +31,9 @@ export function useCommunityPosts(session: UserSession) {
   const createPost = useCallback(
     async (input: CreatePostInput) => {
       const post = await createCommunityPost(input, session);
-      setPosts((prev) => [post, ...prev]);
-      return post;
+      const withCreatorId = { ...post, creatorId: session.creator?.id };
+      setPosts((prev) => [withCreatorId, ...prev]);
+      return withCreatorId;
     },
     [session]
   );

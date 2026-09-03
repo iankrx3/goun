@@ -39,7 +39,6 @@ export default function CommunityPage({ session, onSignIn }: CommunityPageProps)
         {CATEGORIES.map((cat) => (
           <motion.button
             key={cat.id}
-            layout
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setFilter(cat.id)}

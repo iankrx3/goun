@@ -1,4 +1,4 @@
-import type { Creator, CuratorList, ListSpot, Place, UserSession } from '../types';
+import type { Creator, CreatorPick, CuratorList, ListSpot, Place, UserSession } from '../types';
 import { supabase } from '../lib/supabase';
 import { mapCreator, mapCuratorList, mapListSpot } from '../lib/mappers';
 import { mockCreatorPicks } from '../data/mock';
@@ -316,6 +316,23 @@ export async function addSpotToList(
   };
   saveLocalSpot(spot);
   return spot;
+}
+
+/** Surfaces a curator's local-only lists (demo session, or an offline write fallback)
+ * in the map's "Curated by Creators" strip — those spots never reach Supabase's
+ * `list_spots`/`creator_picks`, so the strip can't see them any other way. */
+export function deriveLocalCreatorPicks(creator: Creator): CreatorPick[] {
+  return readLocalLists(creator.id).flatMap((list) =>
+    readLocalSpots(list.id).map((spot) => ({
+      id: `local-pick-${spot.id}`,
+      creator_id: creator.id,
+      creator,
+      place_id: spot.place_id,
+      place: spot.place,
+      personal_note: spot.note || '',
+      created_at: spot.created_at,
+    }))
+  );
 }
 
 export async function removeSpotFromList(session: UserSession, listId: string, spotId: string): Promise<void> {

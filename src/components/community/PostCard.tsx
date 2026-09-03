@@ -15,6 +15,37 @@ interface PostCardProps {
   defaultExpanded?: boolean;
 }
 
+/** Author avatar/name, its own tap target — links to the Curator page when the
+ * poster is a registered curator, otherwise stays a plain (non-interactive) label. */
+const AuthorProfileLink: React.FC<{ post: CommunityPost }> = ({ post }) => {
+  const content = (
+    <>
+      <img
+        src={post.authorAvatarUrl}
+        alt={post.authorName}
+        referrerPolicy="no-referrer"
+        className="h-9 w-9 rounded-full object-cover"
+      />
+      <div>
+        <p className="text-sm font-semibold text-miyeon-main">{post.authorName}</p>
+        <p className="text-[11px] text-miyeon-main/70">
+          {new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+        </p>
+      </div>
+    </>
+  );
+
+  if (!post.creatorId) {
+    return <div className="flex items-center gap-2.5">{content}</div>;
+  }
+
+  return (
+    <Link to={`/curator/${post.creatorId}`} className="flex items-center gap-2.5">
+      {content}
+    </Link>
+  );
+};
+
 export const PostCard: React.FC<PostCardProps> = ({
   post,
   session,
@@ -88,18 +119,7 @@ export const PostCard: React.FC<PostCardProps> = ({
       {defaultExpanded ? (
         <div>
           <div className="flex items-center gap-2.5">
-            <img
-              src={post.authorAvatarUrl}
-              alt={post.authorName}
-              referrerPolicy="no-referrer"
-              className="h-9 w-9 rounded-full object-cover"
-            />
-            <div>
-              <p className="text-sm font-semibold text-miyeon-main">{post.authorName}</p>
-              <p className="text-[11px] text-miyeon-main/70">
-                {new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-              </p>
-            </div>
+            <AuthorProfileLink post={post} />
             {post.rating && (
               <span className="ml-auto flex items-center gap-1 text-xs font-semibold text-miyeon-main">
                 <Star className="h-3 w-3 fill-miyeon-sub1 text-miyeon-sub1" /> {post.rating}
@@ -110,20 +130,9 @@ export const PostCard: React.FC<PostCardProps> = ({
           <p className="mt-3 text-sm leading-relaxed text-miyeon-main/90">{post.text}</p>
         </div>
       ) : (
-        <Link to={`/community/${post.id}`} className="block">
+        <div>
           <div className="flex items-center gap-2.5">
-            <img
-              src={post.authorAvatarUrl}
-              alt={post.authorName}
-              referrerPolicy="no-referrer"
-              className="h-9 w-9 rounded-full object-cover"
-            />
-            <div>
-              <p className="text-sm font-semibold text-miyeon-main">{post.authorName}</p>
-              <p className="text-[11px] text-miyeon-main/70">
-                {new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-              </p>
-            </div>
+            <AuthorProfileLink post={post} />
             {post.rating && (
               <span className="ml-auto flex items-center gap-1 text-xs font-semibold text-miyeon-main">
                 <Star className="h-3 w-3 fill-miyeon-sub1 text-miyeon-sub1" /> {post.rating}
@@ -131,8 +140,10 @@ export const PostCard: React.FC<PostCardProps> = ({
             )}
           </div>
 
-          <p className="mt-3 text-sm leading-relaxed text-miyeon-main/90">{post.text}</p>
-        </Link>
+          <Link to={`/community/${post.id}`} className="block">
+            <p className="mt-3 text-sm leading-relaxed text-miyeon-main/90">{post.text}</p>
+          </Link>
+        </div>
       )}
 
       {post.placeId && post.placeName && (

@@ -48,7 +48,7 @@ export default function App() {
       <main className={isMapRoute ? '' : 'pb-[var(--bottom-nav-h)] sm:pb-0'}>
         <AnimatePresence mode="wait">
           <motion.div
-            key={location.pathname}
+            key={location.pathname.split('/')[1] || 'home'}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
@@ -56,7 +56,7 @@ export default function App() {
           >
             <Routes>
               <Route path="/" element={<ExplorePage />} />
-              <Route path="/map" element={<MapPage />} />
+              <Route path="/map" element={<MapPage session={session} />} />
               <Route
                 path="/community"
                 element={<CommunityPage session={session} onSignIn={() => setIsAuthOpen(true)} />}

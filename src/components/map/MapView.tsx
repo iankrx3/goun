@@ -2,12 +2,18 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Locate, Loader2, Search, X, ChevronRight, ChevronDown, Plus, Minus } from 'lucide-react';
-import type { BeautyCategory, Creator, CreatorPick, Place } from '../../types';
+import type { BeautyCategory, Creator, CreatorPick, Place, UserSession } from '../../types';
 import { categoryMeta } from '../../data/mock';
 import { ENABLED_MAP_CATEGORIES } from '../../data/mapCategories';
-import { fetchCreatorPicks, fetchPlaces } from '../../services/places';
+import { dedupeCreatorPicksByCreator, fetchCreatorPicks, fetchPlaces } from '../../services/places';
 import { searchPlacesByCategory } from '../../services/discovery';
-import { fetchCuratorById, fetchCuratorLists, fetchListById, fetchListSpots } from '../../services/curator';
+import {
+  deriveLocalCreatorPicks,
+  fetchCuratorById,
+  fetchCuratorLists,
+  fetchListById,
+  fetchListSpots,
+} from '../../services/curator';
 
 // Adapted from extract/src/components/MapView.tsx (Sniffood map + login kit).
 // Same Leaflet/MapTiler setup and custom controls; filter modes and pin data
@@ -17,6 +23,9 @@ import { fetchCuratorById, fetchCuratorLists, fetchListById, fetchListSpots } fr
 
 interface MapViewProps {
   onSelectPlace: (place: Place) => void;
+  session: UserSession;
+  /** Whether this MapView is the currently visible tab (vs. hidden via CSS while List view is active). */
+  visible?: boolean;
 }
 
 type FilterMode = 'category' | 'picks';
@@ -35,7 +44,7 @@ const PICK_FILTERS: { id: PickFilter; label: string }[] = [
   { id: 'community', label: 'Community Picks' },
 ];
 
-export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
+export const MapView: React.FC<MapViewProps> = ({ onSelectPlace, session, visible = true }) => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -124,10 +133,12 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
       .then(([placeList, picks]) => {
         const enabledPlaces = placeList.filter((p) => ENABLED_MAP_CATEGORIES.includes(p.category));
         setPlaces(enabledPlaces);
-        setCreatorPicks(picks.filter((pick) => ENABLED_MAP_CATEGORIES.includes(pick.place.category)));
+        const localPicks = session.creator ? deriveLocalCreatorPicks(session.creator) : [];
+        const merged = dedupeCreatorPicksByCreator([...picks, ...localPicks]);
+        setCreatorPicks(merged.filter((pick) => ENABLED_MAP_CATEGORIES.includes(pick.place.category)));
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [session.creator?.id]);
 
   useEffect(() => {
     if (!mapContainerRef.current || mapInstanceRef.current) return;
@@ -164,6 +175,15 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
     userLocationLayerRef.current = L.layerGroup().addTo(map);
     mapInstanceRef.current = map;
   }, []);
+
+  // MapPage keeps this component mounted and toggles it via CSS `hidden` (so the
+  // Leaflet instance survives List↔Map switches); Leaflet doesn't detect its
+  // container becoming visible again after `display:none`, so nudge it here.
+  useEffect(() => {
+    if (!visible) return;
+    const frame = requestAnimationFrame(() => mapInstanceRef.current?.invalidateSize());
+    return () => cancelAnimationFrame(frame);
+  }, [visible]);
 
   const getFilteredPlaces = useCallback((): Place[] => {
     if (curatorFilterActive) return curatorFilterPlaces;
@@ -524,9 +544,10 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
             {isCreatorPicksExpanded && (
               <div className="flex items-center gap-3 overflow-x-auto no-scrollbar px-3.5 pb-3 pt-1">
                 {creatorPicks.map((pick) => (
-                  <Link
+                  <button
                     key={pick.id}
-                    to={`/curator/${pick.creator.id}`}
+                    type="button"
+                    onClick={() => setSearchParams({ curator: pick.creator.id })}
                     className="group flex shrink-0 flex-col items-center gap-1.5"
                   >
                     <img
@@ -538,7 +559,7 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace }) => {
                     <span className="max-w-[70px] truncate text-[11px] font-medium text-miyeon-main">
                       @{pick.creator.username}
                     </span>
-                  </Link>
+                  </button>
                 ))}
               </div>
             )}

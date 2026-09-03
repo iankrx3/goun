@@ -148,6 +148,8 @@ export interface CreatorPick {
 export interface CommunityPost {
   id: string;
   authorId?: string;
+  /** Resolved client-side after fetch — the author's Creator id, present only if they're a registered curator. */
+  creatorId?: string;
   authorName: string;
   authorAvatarUrl: string;
   placeId?: string;
