@@ -19,7 +19,7 @@ export default function MapPage({ session }: { session: UserSession }) {
         <MapView onSelectPlace={setSelectedPlace} session={session} visible={viewMode === 'map'} />
       </div>
       <div className={viewMode === 'list' ? '' : 'hidden'}>
-        <PlaceListView />
+        <PlaceListView session={session} />
       </div>
 
       <motion.button

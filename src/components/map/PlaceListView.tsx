@@ -1,28 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { Place } from '../../types';
-import { fetchPlaces } from '../../services/places';
-import { ENABLED_MAP_CATEGORIES } from '../../data/mapCategories';
+import type { Place, UserSession } from '../../types';
+import { fetchCuratedMapData } from '../../services/curator';
 import { hasCreatripListing } from '../../lib/creatrip';
 import { PlaceCard } from '../place/PlaceCard';
 import { AdBadge, SponsoredPlaceCard } from '../place/SponsoredPlaceCard';
 
-export const PlaceListView: React.FC = () => {
+export const PlaceListView: React.FC<{ session: UserSession }> = ({ session }) => {
   const navigate = useNavigate();
   const [places, setPlaces] = useState<Place[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
-    fetchPlaces()
-      .then((list) => {
-        const filtered = list
-          .filter((p) => ENABLED_MAP_CATEGORIES.includes(p.category))
-          .sort((a, b) => b.rating - a.rating);
-        setPlaces(filtered);
+    fetchCuratedMapData(session)
+      .then(({ places: curatedPlaces }) => {
+        setPlaces([...curatedPlaces].sort((a, b) => b.rating - a.rating));
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [session.creator?.id]);
 
   const viewPlace = (place: Place) => navigate(`/place/${place.id}`);
 

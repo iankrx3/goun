@@ -2,7 +2,8 @@ import type { Creator, CreatorPick, CuratorList, ListSpot, Place, UserSession } 
 import { supabase } from '../lib/supabase';
 import { mapCreator, mapCuratorList, mapListSpot } from '../lib/mappers';
 import { mockCreatorPicks } from '../data/mock';
-import { fetchCreatorById as fetchRemoteCreatorById } from './places';
+import { ENABLED_MAP_CATEGORIES } from '../data/mapCategories';
+import { dedupeCreatorPicksByCreator, fetchAllCreatorPicks, fetchCreatorById as fetchRemoteCreatorById } from './places';
 import { DEMO_USER } from './auth';
 import {
   findLocalListById,
@@ -333,6 +334,27 @@ export function deriveLocalCreatorPicks(creator: Creator): CreatorPick[] {
       created_at: spot.created_at,
     }))
   );
+}
+
+/** Places shown on the Map tab (map + list toggle): only places some curator has
+ * picked (remote + local demo), restricted to the live map categories. `places` is
+ * deduped by place id; `picks` is deduped by creator, for the "Curated by Creators" strip. */
+export async function fetchCuratedMapData(session: UserSession): Promise<{ places: Place[]; picks: CreatorPick[] }> {
+  const remotePicks = await fetchAllCreatorPicks();
+  const localPicks = session.creator ? deriveLocalCreatorPicks(session.creator) : [];
+  const enabledPicks = [...remotePicks, ...localPicks].filter((pick) =>
+    ENABLED_MAP_CATEGORIES.includes(pick.place.category)
+  );
+
+  const seen = new Set<string>();
+  const places: Place[] = [];
+  for (const pick of enabledPicks) {
+    if (seen.has(pick.place.id)) continue;
+    seen.add(pick.place.id);
+    places.push(pick.place);
+  }
+
+  return { places, picks: dedupeCreatorPicksByCreator(enabledPicks) };
 }
 
 export async function removeSpotFromList(session: UserSession, listId: string, spotId: string): Promise<void> {

@@ -5,10 +5,9 @@ import { Locate, Loader2, Search, X, ChevronRight, ChevronDown, Plus, Minus } fr
 import type { BeautyCategory, Creator, CreatorPick, Place, UserSession } from '../../types';
 import { categoryMeta } from '../../data/mock';
 import { ENABLED_MAP_CATEGORIES } from '../../data/mapCategories';
-import { dedupeCreatorPicksByCreator, fetchCreatorPicks, fetchPlaces } from '../../services/places';
 import { searchPlacesByCategory } from '../../services/discovery';
 import {
-  deriveLocalCreatorPicks,
+  fetchCuratedMapData,
   fetchCuratorById,
   fetchCuratorLists,
   fetchListById,
@@ -44,6 +43,24 @@ const PICK_FILTERS: { id: PickFilter; label: string }[] = [
   { id: 'community', label: 'Community Picks' },
 ];
 
+/** Pans/zooms the map so `targets` are fully visible — a single flyTo for one place,
+ * or a padded flyToBounds for several (padded so the top search/filter UI never covers a pin). */
+function fitMapToPlaces(map: L.Map, targets: Place[]) {
+  if (targets.length === 0) return;
+  if (targets.length === 1) {
+    map.flyTo([targets[0].latitude, targets[0].longitude], 16, { animate: true, duration: 1 });
+    return;
+  }
+  const bounds = L.latLngBounds(targets.map((p) => [p.latitude, p.longitude] as [number, number]));
+  map.flyToBounds(bounds, {
+    paddingTopLeft: [40, 140],
+    paddingBottomRight: [40, 100],
+    maxZoom: 16,
+    animate: true,
+    duration: 1,
+  });
+}
+
 export const MapView: React.FC<MapViewProps> = ({ onSelectPlace, session, visible = true }) => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -61,7 +78,7 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace, session, visibl
   const [filterMode, setFilterMode] = useState<FilterMode>('category');
   const [selectedCategory, setSelectedCategory] = useState<'all' | BeautyCategory>('all');
   const [selectedPick, setSelectedPick] = useState<PickFilter>('all');
-  const [isCreatorPicksExpanded, setIsCreatorPicksExpanded] = useState(true);
+  const [isCreatorPicksExpanded, setIsCreatorPicksExpanded] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Place[]>([]);
@@ -95,8 +112,10 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace, session, visibl
       if (listIdParam) {
         const [list, spots] = await Promise.all([fetchListById(listIdParam), fetchListSpots(listIdParam)]);
         if (cancelled) return;
+        const listPlaces = spots.map((s) => s.place);
         setCuratorFilterListTitle(list?.title ?? 'List');
-        setCuratorFilterPlaces(spots.map((s) => s.place));
+        setCuratorFilterPlaces(listPlaces);
+        if (mapInstanceRef.current) fitMapToPlaces(mapInstanceRef.current, listPlaces);
         const creator = list ? await fetchCuratorById(list.curator_id) : null;
         if (!cancelled) setCuratorFilterCreator(creator);
         return;
@@ -119,6 +138,7 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace, session, visibl
           }
         }
         setCuratorFilterPlaces(merged);
+        if (mapInstanceRef.current) fitMapToPlaces(mapInstanceRef.current, merged);
       }
     })();
 
@@ -129,13 +149,10 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace, session, visibl
 
   useEffect(() => {
     setLoading(true);
-    Promise.all([fetchPlaces(), fetchCreatorPicks().catch(() => [] as CreatorPick[])])
-      .then(([placeList, picks]) => {
-        const enabledPlaces = placeList.filter((p) => ENABLED_MAP_CATEGORIES.includes(p.category));
-        setPlaces(enabledPlaces);
-        const localPicks = session.creator ? deriveLocalCreatorPicks(session.creator) : [];
-        const merged = dedupeCreatorPicksByCreator([...picks, ...localPicks]);
-        setCreatorPicks(merged.filter((pick) => ENABLED_MAP_CATEGORIES.includes(pick.place.category)));
+    fetchCuratedMapData(session)
+      .then(({ places: curatedPlaces, picks }) => {
+        setPlaces(curatedPlaces);
+        setCreatorPicks(picks);
       })
       .finally(() => setLoading(false));
   }, [session.creator?.id]);
@@ -225,7 +242,10 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace, session, visibl
       });
 
       const marker = L.marker([place.latitude, place.longitude], { icon: customIcon });
-      marker.on('click', () => onSelectPlace(place));
+      marker.on('click', () => {
+        onSelectPlace(place);
+        fitMapToPlaces(map, [place]);
+      });
       marker.bindPopup(`
         <div class="place-popup-content" style="padding:6px;font-family:inherit;cursor:pointer;">
           <img src="${place.photoUrl}" style="width:100%;height:90px;object-fit:cover;border-radius:8px;margin-bottom:6px;" />
@@ -326,7 +346,7 @@ export const MapView: React.FC<MapViewProps> = ({ onSelectPlace, session, visibl
     setSelectedCategory('all');
     setSearchQuery('');
     setIsSearchOpen(false);
-    map.flyTo([place.latitude, place.longitude], 16, { animate: true, duration: 1 });
+    fitMapToPlaces(map, [place]);
     setTimeout(() => markerMapRef.current.get(place.id)?.openPopup(), 1100);
   };
 

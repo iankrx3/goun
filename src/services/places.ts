@@ -209,7 +209,10 @@ export function dedupeCreatorPicksByCreator(picks: CreatorPick[]): CreatorPick[]
   return Array.from(byCreator.values());
 }
 
-export async function fetchCreatorPicks(): Promise<CreatorPick[]> {
+/** Every place any curator has picked (legacy `creator_picks` + `list_spots`), one entry
+ * per pick — not deduped by creator. Used to derive the Map tab's "curator-added places
+ * only" data set. Falls back to `mockCreatorPicks`. */
+export async function fetchAllCreatorPicks(): Promise<CreatorPick[]> {
   if (!supabase) return mockCreatorPicks;
   try {
     const [{ data, error }, listPicks] = await Promise.all([
@@ -226,9 +229,14 @@ export async function fetchCreatorPicks(): Promise<CreatorPick[]> {
       personal_note: row.personal_note || '',
       created_at: row.created_at,
     }));
-    const merged = dedupeCreatorPicksByCreator([...legacyPicks, ...listPicks]);
+    const merged = [...legacyPicks, ...listPicks];
     return merged.length > 0 ? merged : mockCreatorPicks;
   } catch {
     return mockCreatorPicks;
   }
+}
+
+/** Keeps one pick per creator (the most recent) — used for the "Curated by Creators" strip. */
+export async function fetchCreatorPicks(): Promise<CreatorPick[]> {
+  return dedupeCreatorPicksByCreator(await fetchAllCreatorPicks());
 }
