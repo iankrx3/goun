@@ -5,6 +5,7 @@ export interface Product {
   price: number;
   concernTags: string[];
   oliveYoungUrl: string;
+  tagline?: string;
 }
 
 // Mock K-beauty product data for the §02-8 "And at home" commerce teaser. oliveYoungUrl is a
@@ -66,3 +67,45 @@ export const mockProducts: Product[] = [
 ];
 
 export const defaultProducts = mockProducts.slice(0, 3);
+
+export const OLIVE_YOUNG_HOME = 'https://global.oliveyoung.com/';
+
+/** Home “Take Korea home with you” shelf — copy and prices match the Home v2 mock. */
+export const homeProducts: Product[] = [
+  {
+    id: 'home-barrier-cream',
+    name: 'Barrier Cream',
+    tagline: 'For post-treatment days',
+    imageUrl: '',
+    price: 24,
+    concernTags: ['Dryness', 'Fine Lines'],
+    oliveYoungUrl: oliveYoungSearch('barrier cream'),
+  },
+  {
+    id: 'home-gentle-cleanser',
+    name: 'Gentle Cleanser',
+    tagline: 'Low-pH, no stripping',
+    imageUrl: '',
+    price: 18,
+    concernTags: ['Dryness', 'Acne'],
+    oliveYoungUrl: oliveYoungSearch('gentle cleanser low ph'),
+  },
+  {
+    id: 'home-spf-fluid',
+    name: 'SPF 50+ Fluid',
+    tagline: 'The one dermatologists push',
+    imageUrl: '',
+    price: 21,
+    concernTags: ['Pigmentation', 'Fine Lines'],
+    oliveYoungUrl: oliveYoungSearch('sunscreen spf 50 fluid'),
+  },
+  {
+    id: 'home-soothing-mask',
+    name: 'Soothing Mask',
+    tagline: 'Redness, day 1–3',
+    imageUrl: '',
+    price: 14,
+    concernTags: ['Acne', 'Dryness'],
+    oliveYoungUrl: oliveYoungSearch('soothing mask'),
+  },
+];

@@ -1,7 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Sparkles } from 'lucide-react';
 import type { UserSession } from '../../types';
 
 interface NavHeaderProps {
@@ -18,80 +17,72 @@ const tabs = [
 
 export const NavHeader: React.FC<NavHeaderProps> = ({ session, onSignIn, onSignOut }) => {
   return (
-    <header className="sticky top-0 z-40 flex items-center justify-between border-b border-miyeon-neutral bg-white/95 px-4 py-3 backdrop-blur-md sm:px-6">
-      <NavLink to="/" className="flex items-center gap-1 font-display text-2xl tracking-tight text-miyeon-main">
+    <header className="sticky top-0 z-40 grid grid-cols-[1fr_auto] items-center border-b border-miyeon-neutral/70 bg-white/95 px-4 py-4 backdrop-blur-md sm:grid-cols-[1fr_auto_1fr] sm:px-10">
+      <NavLink
+        to="/"
+        className="flex items-start gap-0.5 justify-self-start font-display text-[22px] tracking-tight text-miyeon-main"
+      >
         miyeon
-        <motion.span
-          animate={{ rotate: [0, 15, -10, 0] }}
-          transition={{ duration: 2.4, repeat: Infinity, repeatDelay: 2, ease: 'easeInOut' }}
-        >
-          <Sparkles className="h-4 w-4 text-miyeon-sub1" />
-        </motion.span>
+        <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-miyeon-sub1" />
       </NavLink>
 
-      <nav className="hidden items-center gap-1 rounded-full bg-miyeon-neutral/50 p-1 sm:flex">
+      <nav className="hidden items-center gap-8 sm:flex">
         {tabs.map((tab) => (
           <NavLink
             key={tab.to}
             to={tab.to}
             end={tab.to === '/'}
-            className="relative rounded-full px-3.5 py-1.5 text-xs font-semibold sm:px-4 sm:text-sm"
+            className={({ isActive }) =>
+              `text-sm transition-colors ${
+                isActive ? 'font-semibold text-miyeon-main' : 'text-miyeon-main/40 hover:text-miyeon-main'
+              }`
+            }
           >
-            {({ isActive }) => (
-              <>
-                {isActive && (
-                  <motion.span
-                    layoutId="nav-active-pill"
-                    className="absolute inset-0 rounded-full bg-miyeon-main"
-                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                  />
-                )}
-                <span
-                  className={`relative z-10 transition-colors ${
-                    isActive ? 'text-white' : 'text-miyeon-main/70 hover:text-miyeon-main'
-                  }`}
-                >
-                  {tab.label}
-                </span>
-              </>
-            )}
+            {tab.label}
           </NavLink>
         ))}
       </nav>
 
-      {session.isLoggedIn && session.user ? (
-        <div className="flex items-center gap-3">
-          <NavLink
-            to={session.creator ? `/curator/${session.creator.id}` : '/curator/signup'}
-            className="hidden text-xs font-semibold text-miyeon-main/70 transition-colors hover:text-miyeon-main sm:inline"
-          >
-            {session.creator ? 'My Curator Page' : 'Become a Curator'}
-          </NavLink>
+      <div className="flex items-center justify-self-end gap-3">
+        <span className="hidden text-xs font-medium tracking-wide text-miyeon-main/50 sm:inline" title="English">
+          EN
+        </span>
+        <span className="hidden h-7 w-7 rounded-full bg-miyeon-neutral sm:block" aria-hidden />
+
+        {session.isLoggedIn && session.user ? (
+          <div className="flex items-center gap-3">
+            <NavLink
+              to={session.creator ? `/curator/${session.creator.id}` : '/curator/signup'}
+              className="hidden text-xs font-semibold text-miyeon-main/70 transition-colors hover:text-miyeon-main sm:inline"
+            >
+              {session.creator ? 'My Curator Page' : 'Become a Curator'}
+            </NavLink>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onSignOut}
+              className="flex items-center gap-2 text-xs font-semibold text-miyeon-main"
+            >
+              <img
+                src={session.user.avatar_url}
+                alt={session.user.name}
+                referrerPolicy="no-referrer"
+                className="h-7 w-7 rounded-full object-cover ring-1 ring-miyeon-neutral"
+              />
+              <span className="hidden sm:inline">Sign out</span>
+            </motion.button>
+          </div>
+        ) : (
           <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={onSignOut}
-            className="flex items-center gap-2 text-xs font-semibold text-miyeon-main"
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={onSignIn}
+            className="text-xs font-semibold text-miyeon-main/70 transition-colors hover:text-miyeon-main sm:text-sm"
           >
-            <img
-              src={session.user.avatar_url}
-              alt={session.user.name}
-              referrerPolicy="no-referrer"
-              className="h-7 w-7 rounded-full object-cover ring-1 ring-miyeon-neutral"
-            />
-            <span className="hidden sm:inline">Sign out</span>
+            Sign in
           </motion.button>
-        </div>
-      ) : (
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={onSignIn}
-          className="rounded-full bg-miyeon-sub1 px-3.5 py-1.5 text-xs font-bold text-white shadow-sm shadow-miyeon-sub1/30 sm:px-4 sm:text-sm"
-        >
-          Sign in
-        </motion.button>
-      )}
+        )}
+      </div>
     </header>
   );
 };

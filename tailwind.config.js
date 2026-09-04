@@ -19,6 +19,7 @@ export default {
         'miyeon-sub2': '#F7E6E6',
         'miyeon-neutral': '#F3EDE6',
         'miyeon-base': '#FFFFFF',
+        'miyeon-ink': '#2A2422',
       },
       fontFamily: {
         display: ['Satoshi', 'Pretendard', 'sans-serif'],

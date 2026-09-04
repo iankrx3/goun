@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { ChevronLeft } from 'lucide-react';
 import type { BeautyCategory, MatchResult, Place, QuizAnswers } from '../types';
 import { categoryMeta } from '../data/mock';
 import { budgetOptions, downtimeOptions, tripLengthOptions, vibePairs, whatOptions } from '../data/quiz';
-import { ModeSelect } from '../components/quiz/ModeSelect';
 import { CategoryRadial } from '../components/quiz/CategoryRadial';
 import { PairChoice } from '../components/quiz/PairChoice';
 import { AITransition } from '../components/quiz/AITransition';
@@ -13,12 +12,13 @@ import { ResultCard } from '../components/explore/ResultCard';
 import { ProductCommerce } from '../components/explore/ProductCommerce';
 import { EmailCaptureCard } from '../components/explore/EmailCaptureCard';
 import { SponsoredPlaceCard } from '../components/place/SponsoredPlaceCard';
+import { HomeLanding } from '../components/home/HomeLanding';
 import { getMatches, placesForCategory } from '../services/match';
 import { fetchPlaces } from '../services/places';
 import { hasCreatripListing } from '../lib/creatrip';
 import { buildPickQuote } from '../lib/pickCopy';
 
-type Step = 'home' | 'category' | 'area' | 'what' | 'vibe' | 'constraints' | 'transition' | 'results';
+type Step = 'home' | 'area' | 'what' | 'vibe' | 'constraints' | 'transition' | 'results';
 
 const TREATMENT_CATEGORIES: BeautyCategory[] = ['skin', 'face'];
 
@@ -57,6 +57,14 @@ export default function ExplorePage() {
   const [answers, setAnswers] = useState<QuizAnswers>(emptyAnswers);
   const [results, setResults] = useState<MatchResult[]>([]);
   const [sponsoredPlace, setSponsoredPlace] = useState<Place | null>(null);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [step]);
+
+  const startAnalysis = () => {
+    setStep('area');
+  };
 
   const selectCategory = (category: BeautyCategory) => {
     setAnswers({ ...emptyAnswers, category });
@@ -108,53 +116,16 @@ export default function ExplorePage() {
     setStep('home');
   };
 
+  if (step === 'home') {
+    return <HomeLanding onStartAnalysis={startAnalysis} />;
+  }
+
   return (
     <div className="mx-auto max-w-xl overflow-hidden px-4 py-8 sm:py-14">
       <AnimatePresence mode="wait">
-        {step === 'home' && (
-          <StepMotion stepKey="home" className="space-y-8 text-center">
-            <div>
-              <h1 className="font-display text-3xl font-semibold leading-tight text-miyeon-main sm:text-4xl">
-                You know Korean beauty
-                <br />
-                treatments are good.
-                <br />
-                You just don't know
-                <br />
-                which one you need.
-              </h1>
-              <p className="mx-auto mt-4 max-w-sm text-sm text-miyeon-main/60">
-                3 questions. 30 seconds.
-                <br />
-                Find your personalized Korean beauty match.
-              </p>
-              <p className="mt-3 text-xs font-semibold text-miyeon-sub1">Used by 1,200+ travelers</p>
-            </div>
-            <motion.button
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.96 }}
-              onClick={() => setStep('category')}
-              className="rounded-full bg-miyeon-sub1 px-8 py-3.5 text-sm font-bold text-white shadow-sm shadow-miyeon-sub1/30"
-            >
-              Find My Match →
-            </motion.button>
-          </StepMotion>
-        )}
-
-        {step === 'category' && (
-          <StepMotion stepKey="category" className="space-y-6">
-            <BackButton onClick={() => setStep('home')} />
-            <div className="text-center">
-              <h2 className="font-display text-2xl text-miyeon-main">What are you here for?</h2>
-              <p className="mt-1 text-xs text-miyeon-main/60">Pick one to get started.</p>
-            </div>
-            <ModeSelect onSelectTreatments={() => setStep('area')} />
-          </StepMotion>
-        )}
-
         {step === 'area' && (
           <StepMotion stepKey="area" className="space-y-8 text-center">
-            <BackButton onClick={() => setStep('category')} />
+            <BackButton onClick={() => setStep('home')} />
             <div>
               <h2 className="font-display text-2xl text-miyeon-main">Miyeon starts asking.</h2>
               <p className="mt-1 text-xs text-miyeon-main/60">Where should we start?</p>

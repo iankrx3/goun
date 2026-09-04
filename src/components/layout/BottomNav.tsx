@@ -1,6 +1,5 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { motion } from 'motion/react';
 import { Compass, MapPin, User, Users } from 'lucide-react';
 import type { UserSession } from '../../types';
 
@@ -15,16 +14,6 @@ const tabs = [
   { to: '/community', label: 'Community', icon: Users },
 ];
 
-const indicator = (
-  <motion.span
-    layoutId="bottom-nav-indicator"
-    className="absolute top-0 h-0.5 w-8 rounded-full bg-miyeon-sub1"
-    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-  />
-);
-
-// Mobile-only bottom tab bar — thumb-reachable primary navigation.
-// NavHeader keeps the top nav for desktop (sm:flex / hidden below sm).
 export const BottomNav: React.FC<BottomNavProps> = ({ session, onSignIn }) => {
   const profileTo = session.creator ? `/curator/${session.creator.id}` : '/curator/signup';
 
@@ -35,18 +24,15 @@ export const BottomNav: React.FC<BottomNavProps> = ({ session, onSignIn }) => {
           key={to}
           to={to}
           end={to === '/'}
-          className="relative flex flex-1 flex-col items-center justify-center gap-0.5 text-[9px] font-semibold"
+          className="flex flex-1 flex-col items-center justify-center gap-0.5 text-[9px] font-medium"
         >
           {({ isActive }) => (
             <>
-              {isActive && indicator}
-              <motion.span
-                animate={{ scale: isActive ? 1.15 : 1, y: isActive ? -1 : 0 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-              >
-                <Icon className={`h-6 w-6 ${isActive ? 'text-miyeon-sub1' : 'text-miyeon-main/60'}`} />
-              </motion.span>
-              <span className={isActive ? 'text-miyeon-sub1' : 'text-miyeon-main/60'}>{label}</span>
+              <Icon
+                strokeWidth={1.5}
+                className={`h-5 w-5 ${isActive ? 'text-miyeon-main' : 'text-miyeon-main/30'}`}
+              />
+              <span className={isActive ? 'text-miyeon-main' : 'text-miyeon-main/30'}>{label}</span>
             </>
           )}
         </NavLink>
@@ -55,25 +41,19 @@ export const BottomNav: React.FC<BottomNavProps> = ({ session, onSignIn }) => {
       {session.isLoggedIn && session.user ? (
         <NavLink
           to={profileTo}
-          className="relative flex flex-1 flex-col items-center justify-center gap-0.5 text-[9px] font-semibold"
+          className="flex flex-1 flex-col items-center justify-center gap-0.5 text-[9px] font-medium"
         >
           {({ isActive }) => (
             <>
-              {isActive && indicator}
-              <motion.span
-                animate={{ scale: isActive ? 1.15 : 1, y: isActive ? -1 : 0 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-              >
-                <img
-                  src={session.user!.avatar_url}
-                  alt=""
-                  referrerPolicy="no-referrer"
-                  className={`h-6 w-6 rounded-full object-cover ${
-                    isActive ? 'ring-2 ring-miyeon-sub1' : 'ring-1 ring-miyeon-neutral'
-                  }`}
-                />
-              </motion.span>
-              <span className={isActive ? 'text-miyeon-sub1' : 'text-miyeon-main/60'}>
+              <img
+                src={session.user!.avatar_url}
+                alt=""
+                referrerPolicy="no-referrer"
+                className={`h-5 w-5 rounded-full object-cover ${
+                  isActive ? 'ring-2 ring-miyeon-main' : 'ring-1 ring-miyeon-neutral'
+                }`}
+              />
+              <span className={isActive ? 'text-miyeon-main' : 'text-miyeon-main/30'}>
                 {session.creator ? 'Profile' : 'Curator'}
               </span>
             </>
@@ -82,9 +62,9 @@ export const BottomNav: React.FC<BottomNavProps> = ({ session, onSignIn }) => {
       ) : (
         <button
           onClick={onSignIn}
-          className="flex flex-1 flex-col items-center justify-center gap-0.5 text-[9px] font-semibold text-miyeon-main/60"
+          className="flex flex-1 flex-col items-center justify-center gap-0.5 text-[9px] font-medium text-miyeon-main/30"
         >
-          <User className="h-6 w-6" />
+          <User strokeWidth={1.5} className="h-5 w-5" />
           Profile
         </button>
       )}
