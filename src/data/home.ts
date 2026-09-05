@@ -54,7 +54,7 @@ export const trendingItems: TrendingItem[] = [
     kind: 'TREATMENT',
     title: 'Rejuran vs Juvelook —\nwhich one is for you?',
     minutes: 5,
-    href: '/treatment/t-skin-booster',
+    href: '/community?tab=magazine',
     gradient: 'from-[#f4ddd8] to-[#e8b9b2]',
   },
   {
@@ -62,7 +62,7 @@ export const trendingItems: TrendingItem[] = [
     kind: 'GUIDE',
     title: 'What you can realistically\nget done in 4 days',
     minutes: 7,
-    href: '/community',
+    href: '/community?tab=magazine',
     gradient: 'from-[#e7b4ac] to-[#c97b76]',
   },
   {
@@ -70,7 +70,7 @@ export const trendingItems: TrendingItem[] = [
     kind: 'TREND',
     title: 'The “glass skin” protocol\nSeoul clinics actually use',
     minutes: 4,
-    href: '/treatment/t-skin-booster',
+    href: '/community?tab=magazine',
     gradient: 'from-[#edd0c9] to-[#d49a9a]',
   },
 ];

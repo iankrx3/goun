@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
+import { useSearchParams } from 'react-router-dom';
 import type { CommunityPost, UserSession } from '../types';
 import { useCommunityPosts } from '../hooks/useCommunityPosts';
 import { PostComposer } from '../components/community/PostComposer';
 import { PostCard } from '../components/community/PostCard';
+import { MagazineGrid } from '../components/community/MagazineGrid';
 
 interface CommunityPageProps {
   session: UserSession;
@@ -18,7 +20,14 @@ const CATEGORIES: { id: CommunityPost['category'] | 'all'; label: string }[] = [
   { id: 'questions', label: '💬 Questions' },
 ];
 
+const TABS: { id: 'community' | 'magazine'; label: string }[] = [
+  { id: 'community', label: 'Community' },
+  { id: 'magazine', label: 'Magazine' },
+];
+
 export default function CommunityPage({ session, onSignIn }: CommunityPageProps) {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') === 'magazine' ? 'magazine' : 'community';
   const [filter, setFilter] = useState<(typeof CATEGORIES)[number]['id']>('all');
   const { posts, loading, createPost, toggleLike, deletePost } = useCommunityPosts(session);
 
@@ -33,39 +42,67 @@ export default function CommunityPage({ session, onSignIn }: CommunityPageProps)
         </p>
       </div>
 
-      <PostComposer session={session} onSignIn={onSignIn} onSubmit={createPost} />
-
-      <div className="flex gap-2 overflow-x-auto no-scrollbar">
-        {CATEGORIES.map((cat) => (
-          <motion.button
-            key={cat.id}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setFilter(cat.id)}
-            className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors ${
-              filter === cat.id ? 'bg-miyeon-main text-white' : 'bg-miyeon-neutral/60 text-miyeon-main/70'
+      <div className="flex gap-2 rounded-full bg-miyeon-neutral/40 p-1">
+        {TABS.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setSearchParams(tab.id === 'community' ? {} : { tab: tab.id })}
+            className={`flex-1 rounded-full py-2 text-sm font-semibold transition-colors ${
+              activeTab === tab.id ? 'bg-miyeon-main text-white' : 'text-miyeon-main/60'
             }`}
           >
-            {cat.label}
-          </motion.button>
+            {tab.label}
+          </button>
         ))}
       </div>
 
-      {loading ? (
-        <p className="py-10 text-center text-sm text-miyeon-main/70">Loading…</p>
-      ) : (
-        <div className="space-y-3">
-          {filteredPosts.map((post) => (
-            <PostCard
-              key={post.id}
-              post={post}
-              session={session}
-              onSignIn={onSignIn}
-              onLikeToggle={toggleLike}
-              onDeletePost={deletePost}
-            />
-          ))}
+      {activeTab === 'magazine' ? (
+        <div className="space-y-5">
+          <div>
+            <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-miyeon-main/40">
+              Magazine
+            </p>
+            <h2 className="mt-1 font-display text-xl text-miyeon-main">Seoul beauty, explained.</h2>
+          </div>
+          <MagazineGrid />
         </div>
+      ) : (
+        <>
+          <PostComposer session={session} onSignIn={onSignIn} onSubmit={createPost} />
+
+          <div className="flex gap-2 overflow-x-auto no-scrollbar">
+            {CATEGORIES.map((cat) => (
+              <motion.button
+                key={cat.id}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setFilter(cat.id)}
+                className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors ${
+                  filter === cat.id ? 'bg-miyeon-main text-white' : 'bg-miyeon-neutral/60 text-miyeon-main/70'
+                }`}
+              >
+                {cat.label}
+              </motion.button>
+            ))}
+          </div>
+
+          {loading ? (
+            <p className="py-10 text-center text-sm text-miyeon-main/70">Loading…</p>
+          ) : (
+            <div className="space-y-3">
+              {filteredPosts.map((post) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  session={session}
+                  onSignIn={onSignIn}
+                  onLikeToggle={toggleLike}
+                  onDeletePost={deletePost}
+                />
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

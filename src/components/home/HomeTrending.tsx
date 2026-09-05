@@ -15,7 +15,7 @@ export const HomeTrending: React.FC = () => (
           </h2>
         </div>
         <Link
-          to="/community"
+          to="/community?tab=magazine"
           className="hidden text-sm text-miyeon-main/50 transition-colors hover:text-miyeon-main md:inline"
         >
           See all →

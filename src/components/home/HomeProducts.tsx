@@ -32,7 +32,11 @@ export const HomeProducts: React.FC = () => (
             rel="noreferrer"
             className="group block"
           >
-            <div className="aspect-square rounded-2xl bg-miyeon-neutral transition-transform group-hover:scale-[1.01]" />
+            <img
+              src={product.imageUrl}
+              alt={product.name}
+              className="aspect-square w-full rounded-2xl object-cover transition-transform group-hover:scale-[1.01]"
+            />
             <p className="mt-3 text-sm font-semibold text-miyeon-main">{product.name}</p>
             {product.tagline && (
               <p className="mt-0.5 text-xs text-miyeon-main/50">{product.tagline}</p>
