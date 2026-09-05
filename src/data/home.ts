@@ -14,7 +14,7 @@ export interface TrendingItem {
   title: string;
   minutes: number;
   href: string;
-  gradient: string;
+  imageUrl: string;
 }
 
 export interface Testimonial {
@@ -48,30 +48,31 @@ export const browseItems: BrowseItem[] = [
   },
 ];
 
+// ids match entries in data/magazine.ts 1:1, so each card deep-links straight to its column.
 export const trendingItems: TrendingItem[] = [
   {
     id: 'rejuran-juvelook',
     kind: 'TREATMENT',
     title: 'Rejuran vs Juvelook —\nwhich one is for you?',
     minutes: 5,
-    href: '/community?tab=magazine',
-    gradient: 'from-[#f4ddd8] to-[#e8b9b2]',
+    href: '/magazine/rejuran-juvelook',
+    imageUrl: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=1200',
   },
   {
     id: 'four-days',
     kind: 'GUIDE',
     title: 'What you can realistically\nget done in 4 days',
     minutes: 7,
-    href: '/community?tab=magazine',
-    gradient: 'from-[#e7b4ac] to-[#c97b76]',
+    href: '/magazine/four-days',
+    imageUrl: 'https://images.unsplash.com/photo-1517154421773-0529f29ea451?q=80&w=1200',
   },
   {
     id: 'glass-skin',
     kind: 'TREND',
     title: 'The “glass skin” protocol\nSeoul clinics actually use',
     minutes: 4,
-    href: '/community?tab=magazine',
-    gradient: 'from-[#edd0c9] to-[#d49a9a]',
+    href: '/magazine/glass-skin',
+    imageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1200',
   },
 ];
 

@@ -29,7 +29,11 @@ export const HomeTrending: React.FC = () => (
             to={item.href}
             className="min-w-[70%] snap-start md:min-w-0"
           >
-            <div className={`aspect-[5/3] rounded-2xl bg-gradient-to-br ${item.gradient}`} />
+            <img
+              src={item.imageUrl}
+              alt={item.title.replace(/\n/g, ' ')}
+              className="aspect-[5/3] w-full rounded-2xl object-cover"
+            />
             <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.16em] text-miyeon-sub1">
               {item.kind}
             </p>
