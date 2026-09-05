@@ -176,6 +176,21 @@ export interface PostComment {
   createdAt: string;
 }
 
+export interface MagazineArticle {
+  id: string;
+  /** creators.id — set for user-submitted columns, undefined for the seeded editorial pieces. */
+  curatorId?: string;
+  authorName: string;
+  authorAvatarUrl?: string;
+  kind: 'TREATMENT' | 'GUIDE' | 'TREND';
+  title: string;
+  excerpt: string;
+  body: string;
+  imageUrl: string;
+  minutes: number;
+  createdAt: string;
+}
+
 export interface UserSession {
   isLoggedIn: boolean;
   user?: {

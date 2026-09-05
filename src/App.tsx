@@ -11,6 +11,7 @@ import CommunityPage from './pages/CommunityPage';
 import PlaceDetailPage from './pages/PlaceDetailPage';
 import TreatmentDetailPage from './pages/TreatmentDetailPage';
 import PostDetailPage from './pages/PostDetailPage';
+import MagazineDetailPage from './pages/MagazineDetailPage';
 import CuratorProfilePage from './pages/CuratorProfilePage';
 import CuratorSignupPage from './pages/CuratorSignupPage';
 import CuratorEditPage from './pages/CuratorEditPage';
@@ -65,6 +66,7 @@ export default function App() {
                 path="/community/:id"
                 element={<PostDetailPage session={session} onSignIn={() => setIsAuthOpen(true)} />}
               />
+              <Route path="/magazine/:id" element={<MagazineDetailPage />} />
               <Route path="/place/:id" element={<PlaceDetailPage />} />
               <Route path="/treatment/:id" element={<TreatmentDetailPage />} />
               <Route

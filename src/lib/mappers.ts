@@ -1,5 +1,5 @@
 import type { User } from '@supabase/supabase-js';
-import { CommunityPost, Creator, CuratorList, ListSpot, Place, PostComment, UserSession } from '../types';
+import { CommunityPost, Creator, CuratorList, ListSpot, MagazineArticle, Place, PostComment, UserSession } from '../types';
 
 export function mapPlace(row: any): Place {
   return {
@@ -90,6 +90,22 @@ export function mapCommunityPost(
     likeCount: counts?.likeCount ?? row.post_likes?.[0]?.count ?? 0,
     commentCount: counts?.commentCount ?? row.post_comments?.[0]?.count ?? 0,
     likedByMe,
+  };
+}
+
+export function mapMagazineArticle(row: any): MagazineArticle {
+  return {
+    id: row.id,
+    curatorId: row.curator_id ?? undefined,
+    authorName: row.author_name,
+    authorAvatarUrl: row.author_avatar_url || undefined,
+    kind: row.kind,
+    title: row.title,
+    excerpt: row.excerpt,
+    body: row.body,
+    imageUrl: row.image_url,
+    minutes: row.minutes,
+    createdAt: row.created_at,
   };
 }
 
