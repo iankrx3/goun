@@ -28,3 +28,7 @@ export function readLocalArticles(): MagazineArticle[] {
 export function saveLocalArticle(article: MagazineArticle) {
   writeJson(ARTICLES_KEY, [article, ...readLocalArticles()]);
 }
+
+export function removeLocalArticle(articleId: string) {
+  writeJson(ARTICLES_KEY, readLocalArticles().filter((a) => a.id !== articleId));
+}

@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { MagazineArticle, UserSession } from '../types';
-import { CreateMagazineArticleInput, createMagazineArticle, fetchMagazineArticles } from '../services/magazine';
+import {
+  CreateMagazineArticleInput,
+  createMagazineArticle,
+  deleteMagazineArticle,
+  fetchMagazineArticles,
+} from '../services/magazine';
 
 export function useMagazineArticles(session: UserSession) {
   const [articles, setArticles] = useState<MagazineArticle[]>([]);
@@ -26,5 +31,13 @@ export function useMagazineArticles(session: UserSession) {
     [session]
   );
 
-  return { articles, loading, createArticle, refresh };
+  const deleteArticle = useCallback(
+    async (articleId: string) => {
+      await deleteMagazineArticle(articleId, session);
+      setArticles((prev) => prev.filter((a) => a.id !== articleId));
+    },
+    [session]
+  );
+
+  return { articles, loading, createArticle, deleteArticle, refresh };
 }

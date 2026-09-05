@@ -32,7 +32,7 @@ export default function CommunityPage({ session, onSignIn }: CommunityPageProps)
   const activeTab = searchParams.get('tab') === 'magazine' ? 'magazine' : 'community';
   const [filter, setFilter] = useState<(typeof CATEGORIES)[number]['id']>('all');
   const { posts, loading, createPost, toggleLike, deletePost } = useCommunityPosts(session);
-  const { articles, createArticle } = useMagazineArticles(session);
+  const { articles, createArticle, deleteArticle } = useMagazineArticles(session);
 
   const filteredPosts = filter === 'all' ? posts : posts.filter((p) => p.category === filter);
 
@@ -68,7 +68,7 @@ export default function CommunityPage({ session, onSignIn }: CommunityPageProps)
             <h2 className="mt-1 font-display text-xl text-miyeon-main">Seoul beauty, explained.</h2>
           </div>
           <MagazineComposer session={session} onSignIn={onSignIn} onSubmit={createArticle} />
-          <MagazineGrid articles={articles} />
+          <MagazineGrid articles={articles} session={session} onDeleteArticle={deleteArticle} />
         </div>
       ) : (
         <>

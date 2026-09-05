@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { ChevronLeft } from 'lucide-react';
-import type { MagazineArticle } from '../types';
-import { fetchMagazineArticles } from '../services/magazine';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { ChevronLeft, Trash2 } from 'lucide-react';
+import type { MagazineArticle, UserSession } from '../types';
+import { deleteMagazineArticle, fetchMagazineArticles } from '../services/magazine';
 
-export default function MagazineDetailPage() {
+interface MagazineDetailPageProps {
+  session: UserSession;
+}
+
+export default function MagazineDetailPage({ session }: MagazineDetailPageProps) {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [article, setArticle] = useState<MagazineArticle | null | undefined>(undefined);
 
   useEffect(() => {
@@ -16,14 +21,34 @@ export default function MagazineDetailPage() {
   if (article === undefined) return <div className="px-4 py-10 text-sm text-miyeon-main/60">Loading…</div>;
   if (!article) return <div className="px-4 py-10 text-sm text-miyeon-main/60">Column not found.</div>;
 
+  const isOwnArticle = Boolean(session.creator?.id) && session.creator?.id === article.curatorId;
+
+  const handleDelete = async () => {
+    if (!window.confirm('칼럼을 삭제할까요?')) return;
+    await deleteMagazineArticle(article.id, session);
+    navigate('/community?tab=magazine');
+  };
+
   return (
     <div className="mx-auto max-w-2xl space-y-5 px-4 py-8">
-      <Link
-        to="/community?tab=magazine"
-        className="flex items-center gap-1 text-xs font-semibold text-miyeon-main/60"
-      >
-        <ChevronLeft className="h-3.5 w-3.5" /> Back to magazine
-      </Link>
+      <div className="flex items-center justify-between">
+        <Link
+          to="/community?tab=magazine"
+          className="flex items-center gap-1 text-xs font-semibold text-miyeon-main/60"
+        >
+          <ChevronLeft className="h-3.5 w-3.5" /> Back to magazine
+        </Link>
+        {isOwnArticle && (
+          <button
+            type="button"
+            onClick={handleDelete}
+            aria-label="칼럼 삭제"
+            className="flex items-center gap-1 text-xs font-semibold text-red-500"
+          >
+            <Trash2 className="h-3.5 w-3.5" /> Delete
+          </button>
+        )}
+      </div>
 
       <img src={article.imageUrl} alt={article.title} className="aspect-[5/3] w-full rounded-2xl object-cover" />
 

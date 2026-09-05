@@ -38,10 +38,15 @@ create table if not exists creator_lists (
 );
 
 -- place_id intentionally has no FK to `places` — see note on creator_picks above.
+-- place_snapshot stores the full Place object as of when it was added: since there's
+-- no FK, PostgREST can't embed-join `places` (it resolves embeds from FK metadata
+-- only), and `places` is never populated anyway — so place data is captured here
+-- instead of joined at read time.
 create table if not exists list_spots (
   id uuid primary key default gen_random_uuid(),
   list_id uuid not null references creator_lists(id) on delete cascade,
   place_id text not null,
+  place_snapshot jsonb not null default '{}'::jsonb,
   note text,
   position integer not null default 0,
   created_at timestamptz not null default now()

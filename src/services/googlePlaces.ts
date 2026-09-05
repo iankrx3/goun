@@ -129,7 +129,8 @@ export async function getApiHealth(): Promise<{ kto: boolean; google: boolean; g
     }
     healthCache = (await response.json()) as { kto: boolean; google: boolean; gemini: boolean };
     return healthCache;
-  } catch {
+  } catch (err) {
+    console.warn('getApiHealth: /api/health request failed, treating all APIs as unhealthy', err);
     healthCache = { kto: false, google: false, gemini: false };
     return healthCache;
   }

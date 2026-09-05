@@ -3,7 +3,7 @@ import { mapMagazineArticle } from '../lib/mappers';
 import { supabase } from '../lib/supabase';
 import { mockMagazineArticles } from '../data/magazine';
 import { DEMO_USER } from './auth';
-import { readLocalArticles, saveLocalArticle } from '../lib/localMagazineStore';
+import { readLocalArticles, removeLocalArticle, saveLocalArticle } from '../lib/localMagazineStore';
 
 export interface CreateMagazineArticleInput {
   kind: MagazineArticle['kind'];
@@ -14,6 +14,10 @@ export interface CreateMagazineArticleInput {
 
 function isDemoSession(session: UserSession): boolean {
   return session.user?.id === DEMO_USER.id;
+}
+
+function isLocalOrMockArticle(articleId: string): boolean {
+  return articleId.startsWith('local-') || mockMagazineArticles.some((a) => a.id === articleId);
 }
 
 function deriveExcerpt(body: string): string {
@@ -97,4 +101,21 @@ export async function createMagazineArticle(
   };
   saveLocalArticle(article);
   return article;
+}
+
+export async function deleteMagazineArticle(articleId: string, session: UserSession): Promise<void> {
+  if (!session.isLoggedIn || !session.creator) throw new Error('Must be a curator to delete a column.');
+
+  if (isLocalOrMockArticle(articleId)) {
+    removeLocalArticle(articleId);
+    return;
+  }
+
+  if (!supabase) throw new Error('Unable to delete column.');
+  const { error } = await supabase
+    .from('magazine_articles')
+    .delete()
+    .eq('id', articleId)
+    .eq('curator_id', session.creator.id);
+  if (error) throw error;
 }

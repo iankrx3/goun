@@ -267,7 +267,7 @@ export async function fetchListSpots(listId: string): Promise<ListSpot[]> {
     try {
       const { data, error } = await supabase
         .from('list_spots')
-        .select('*, place:places(*)')
+        .select('*')
         .eq('list_id', listId)
         .order('position', { ascending: true });
       if (error) throw error;
@@ -290,17 +290,18 @@ export async function addSpotToList(
 
   if (supabase && !isLocalListId(listId) && !isDemoSession(session)) {
     try {
-      const { count } = await supabase
+      const { count, error: countError } = await supabase
         .from('list_spots')
         .select('*', { count: 'exact', head: true })
         .eq('list_id', listId);
+      if (countError) console.warn('addSpotToList: position count query failed, defaulting to 0', countError);
       const { data, error } = await supabase
         .from('list_spots')
-        .insert({ list_id: listId, place_id: place.id, note: note ?? null, position: count ?? 0 })
-        .select('*, place:places(*)')
+        .insert({ list_id: listId, place_id: place.id, place_snapshot: place, note: note ?? null, position: count ?? 0 })
+        .select()
         .single();
       if (error) throw error;
-      return mapListSpot({ ...data, place: data.place ?? place });
+      return mapListSpot(data);
     } catch (err) {
       console.warn('addSpotToList: Supabase insert failed, saving spot locally instead', err);
     }

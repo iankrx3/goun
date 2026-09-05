@@ -86,7 +86,8 @@ export async function buildUserSession(user: User | null): Promise<UserSession> 
   let creator: Creator | null = null;
   try {
     creator = await fetchCreatorByUserId(user.id);
-  } catch {
+  } catch (err) {
+    console.warn('buildUserSession: fetchCreatorByUserId failed, treating user as non-curator', err);
     creator = null;
   }
   return mapAuthSession(user, creator);

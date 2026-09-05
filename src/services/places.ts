@@ -156,21 +156,27 @@ export async function fetchCreatorById(id: string): Promise<Creator | null> {
 export async function fetchCreatorPicksByCreatorId(creatorId: string): Promise<CreatorPick[]> {
   if (!supabase) return mockCreatorPicks.filter((pick) => pick.creator_id === creatorId);
   try {
+    // No place:places(*) embed here — creator_picks.place_id has no FK to `places`
+    // (dropped along with list_spots'; see supabase/creators_schema.sql), and this
+    // legacy table has no place_snapshot column either since nothing writes to it
+    // anymore. Guard against a (currently nonexistent) row lacking place data.
     const { data, error } = await supabase
       .from('creator_picks')
-      .select('*, creator:creators(*), place:places(*)')
+      .select('*, creator:creators(*)')
       .eq('creator_id', creatorId);
     if (error) throw error;
     if (!data || data.length === 0) return mockCreatorPicks.filter((pick) => pick.creator_id === creatorId);
-    return data.map((row: any) => ({
-      id: row.id,
-      creator_id: row.creator_id,
-      creator: mapCreator(row.creator),
-      place_id: row.place_id,
-      place: mapPlace(row.place),
-      personal_note: row.personal_note || '',
-      created_at: row.created_at,
-    }));
+    return data
+      .filter((row: any) => row.place)
+      .map((row: any) => ({
+        id: row.id,
+        creator_id: row.creator_id,
+        creator: mapCreator(row.creator),
+        place_id: row.place_id,
+        place: mapPlace(row.place),
+        personal_note: row.personal_note || '',
+        created_at: row.created_at,
+      }));
   } catch (err) {
     console.warn('fetchCreatorPicksByCreatorId: Supabase query failed, falling back to mock picks', err);
     return mockCreatorPicks.filter((pick) => pick.creator_id === creatorId);
@@ -184,18 +190,18 @@ async function fetchListSpotCreatorPicks(): Promise<CreatorPick[]> {
   try {
     const { data, error } = await supabase
       .from('list_spots')
-      .select('id, place_id, note, created_at, place:places(*), list:creator_lists(id, creator:creators(*))')
+      .select('id, place_id, note, created_at, place_snapshot, list:creator_lists(id, creator:creators(*))')
       .order('created_at', { ascending: false })
       .limit(100);
     if (error) throw error;
     return (data ?? [])
-      .filter((row: any) => row.list?.creator && row.place)
+      .filter((row: any) => row.list?.creator && row.place_snapshot)
       .map((row: any) => ({
         id: `list-spot-${row.id}`,
         creator_id: row.list.creator.id,
         creator: mapCreator(row.list.creator),
         place_id: row.place_id,
-        place: mapPlace(row.place),
+        place: { ...row.place_snapshot, id: row.place_id },
         personal_note: row.note || '',
         created_at: row.created_at,
       }));
@@ -223,20 +229,23 @@ export function dedupeCreatorPicksByCreator(picks: CreatorPick[]): CreatorPick[]
 export async function fetchAllCreatorPicks(): Promise<CreatorPick[]> {
   if (!supabase) return mockCreatorPicks;
   try {
+    // No place:places(*) embed on creator_picks — see fetchCreatorPicksByCreatorId note.
     const [{ data, error }, listPicks] = await Promise.all([
-      supabase.from('creator_picks').select('*, creator:creators(*), place:places(*)'),
+      supabase.from('creator_picks').select('*, creator:creators(*)'),
       fetchListSpotCreatorPicks(),
     ]);
     if (error) throw error;
-    const legacyPicks: CreatorPick[] = (data ?? []).map((row: any) => ({
-      id: row.id,
-      creator_id: row.creator_id,
-      creator: mapCreator(row.creator),
-      place_id: row.place_id,
-      place: mapPlace(row.place),
-      personal_note: row.personal_note || '',
-      created_at: row.created_at,
-    }));
+    const legacyPicks: CreatorPick[] = (data ?? [])
+      .filter((row: any) => row.place)
+      .map((row: any) => ({
+        id: row.id,
+        creator_id: row.creator_id,
+        creator: mapCreator(row.creator),
+        place_id: row.place_id,
+        place: mapPlace(row.place),
+        personal_note: row.personal_note || '',
+        created_at: row.created_at,
+      }));
     const merged = [...legacyPicks, ...listPicks];
     return merged.length > 0 ? merged : mockCreatorPicks;
   } catch (err) {

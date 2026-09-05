@@ -62,7 +62,9 @@ export function mapListSpot(row: any): ListSpot {
     id: row.id,
     list_id: row.list_id,
     place_id: row.place_id,
-    place: mapPlace(row.place),
+    // No FK/join to `places` (it's an intentionally empty cache) — place data is
+    // captured as a snapshot at write time instead. See supabase/creators_schema.sql.
+    place: { ...(row.place_snapshot ?? {}), id: row.place_id },
     note: row.note ?? undefined,
     position: row.position ?? 0,
     created_at: row.created_at,

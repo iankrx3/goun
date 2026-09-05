@@ -66,7 +66,7 @@ export default function App() {
                 path="/community/:id"
                 element={<PostDetailPage session={session} onSignIn={() => setIsAuthOpen(true)} />}
               />
-              <Route path="/magazine/:id" element={<MagazineDetailPage />} />
+              <Route path="/magazine/:id" element={<MagazineDetailPage session={session} />} />
               <Route path="/place/:id" element={<PlaceDetailPage />} />
               <Route path="/treatment/:id" element={<TreatmentDetailPage />} />
               <Route
