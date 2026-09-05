@@ -17,10 +17,13 @@ create table if not exists creators (
   created_at timestamptz not null default now()
 );
 
+-- place_id intentionally has no FK to `places`: real place ids are dynamic
+-- (Google/KTO live search results), and `places` is only an ad hoc, never-synced
+-- cache — see supabase/places_schema.sql.
 create table if not exists creator_picks (
   id uuid primary key default gen_random_uuid(),
   creator_id uuid not null references creators(id) on delete cascade,
-  place_id text not null references places(id),
+  place_id text not null,
   personal_note text,
   created_at timestamptz not null default now()
 );
@@ -34,10 +37,11 @@ create table if not exists creator_lists (
   created_at timestamptz not null default now()
 );
 
+-- place_id intentionally has no FK to `places` — see note on creator_picks above.
 create table if not exists list_spots (
   id uuid primary key default gen_random_uuid(),
   list_id uuid not null references creator_lists(id) on delete cascade,
-  place_id text not null references places(id),
+  place_id text not null,
   note text,
   position integer not null default 0,
   created_at timestamptz not null default now()

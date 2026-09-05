@@ -41,7 +41,8 @@ export async function fetchMagazineArticles(): Promise<MagazineArticle[]> {
     if (error) throw error;
     const remote = (data ?? []).map(mapMagazineArticle);
     return sortByCreatedAtDesc([...remote, ...local]);
-  } catch {
+  } catch (err) {
+    console.warn('fetchMagazineArticles: Supabase query failed, falling back to local/mock data', err);
     return sortByCreatedAtDesc(local);
   }
 }
@@ -76,8 +77,8 @@ export async function createMagazineArticle(
         .single();
       if (error) throw error;
       return mapMagazineArticle(data);
-    } catch {
-      // fall through to local fallback (Supabase write failed unexpectedly)
+    } catch (err) {
+      console.error('createMagazineArticle: Supabase write failed unexpectedly, saving locally instead', err);
     }
   }
 

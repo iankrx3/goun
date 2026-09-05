@@ -25,8 +25,8 @@ export async function saveLead(input: SaveLeadInput): Promise<void> {
       });
       if (error) throw error;
       return;
-    } catch {
-      // fall through to local fallback (Supabase write failed, or table doesn't exist yet)
+    } catch (err) {
+      console.error('saveLead: Supabase write failed, saving locally instead', err);
     }
   }
 

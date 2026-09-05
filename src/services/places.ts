@@ -46,7 +46,8 @@ export async function fetchPlaces(): Promise<Place[]> {
     if (error) throw error;
     if (!data || data.length === 0) return (await livePlaces()) ?? mockPlaces;
     return data.map(mapPlace);
-  } catch {
+  } catch (err) {
+    console.warn('fetchPlaces: Supabase query failed, falling back to live/mock data', err);
     return (await livePlaces()) ?? mockPlaces;
   }
 }
@@ -69,7 +70,8 @@ export async function fetchTreatments(): Promise<Treatment[]> {
     if (error) throw error;
     if (!data || data.length === 0) return (await liveTreatments()) ?? mockTreatments;
     return data as Treatment[];
-  } catch {
+  } catch (err) {
+    console.warn('fetchTreatments: Supabase query failed, falling back to live/mock data', err);
     return (await liveTreatments()) ?? mockTreatments;
   }
 }
@@ -93,7 +95,8 @@ export async function fetchCreators(): Promise<Creator[]> {
     if (error) throw error;
     if (!data || data.length === 0) return mockCreators;
     return data.map((row: any) => mapCreator(row, row.creator_picks?.length || 0));
-  } catch {
+  } catch (err) {
+    console.warn('fetchCreators: Supabase query failed, falling back to mock creators', err);
     return mockCreators;
   }
 }
@@ -109,7 +112,8 @@ export async function fetchCreatorByUserId(userId: string): Promise<Creator | nu
     if (error) throw error;
     if (!data) return null;
     return mapCreator(data, data.creator_picks?.length || 0);
-  } catch {
+  } catch (err) {
+    console.warn('fetchCreatorByUserId: Supabase query failed', err);
     return null;
   }
 }
@@ -126,7 +130,8 @@ export async function fetchCreatorIdsByUserIds(userIds: string[]): Promise<Map<s
     const { data, error } = await supabase.from('creators').select('id, user_id').in('user_id', unique);
     if (error) throw error;
     return new Map((data ?? []).map((row: any) => [row.user_id, row.id]));
-  } catch {
+  } catch (err) {
+    console.warn('fetchCreatorIdsByUserIds: Supabase query failed', err);
     return new Map();
   }
 }
@@ -142,7 +147,8 @@ export async function fetchCreatorById(id: string): Promise<Creator | null> {
     if (error) throw error;
     if (!data) return mockCreators.find((creator) => creator.id === id) ?? null;
     return mapCreator(data, data.creator_picks?.length || 0);
-  } catch {
+  } catch (err) {
+    console.warn('fetchCreatorById: Supabase query failed, falling back to mock creators', err);
     return mockCreators.find((creator) => creator.id === id) ?? null;
   }
 }
@@ -165,7 +171,8 @@ export async function fetchCreatorPicksByCreatorId(creatorId: string): Promise<C
       personal_note: row.personal_note || '',
       created_at: row.created_at,
     }));
-  } catch {
+  } catch (err) {
+    console.warn('fetchCreatorPicksByCreatorId: Supabase query failed, falling back to mock picks', err);
     return mockCreatorPicks.filter((pick) => pick.creator_id === creatorId);
   }
 }
@@ -192,7 +199,8 @@ async function fetchListSpotCreatorPicks(): Promise<CreatorPick[]> {
         personal_note: row.note || '',
         created_at: row.created_at,
       }));
-  } catch {
+  } catch (err) {
+    console.warn('fetchListSpotCreatorPicks: Supabase query failed', err);
     return [];
   }
 }
@@ -231,7 +239,8 @@ export async function fetchAllCreatorPicks(): Promise<CreatorPick[]> {
     }));
     const merged = [...legacyPicks, ...listPicks];
     return merged.length > 0 ? merged : mockCreatorPicks;
-  } catch {
+  } catch (err) {
+    console.warn('fetchAllCreatorPicks: Supabase query failed, falling back to mock picks', err);
     return mockCreatorPicks;
   }
 }

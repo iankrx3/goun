@@ -62,8 +62,8 @@ export async function createCurator(session: UserSession, input: CuratorProfileI
         .single();
       if (error) throw error;
       return mapCreator(data, 0);
-    } catch {
-      // fall through to local fallback (Supabase write failed unexpectedly)
+    } catch (err) {
+      console.error('createCurator: Supabase write failed unexpectedly, saving locally instead', err);
     }
   }
 
@@ -106,8 +106,8 @@ export async function updateCurator(session: UserSession, patch: Partial<Curator
         .single();
       if (error) throw error;
       return mapCreator(data, current.picks_count);
-    } catch {
-      // fall through to local fallback
+    } catch (err) {
+      console.error('updateCurator: Supabase write failed unexpectedly, saving locally instead', err);
     }
   }
 
@@ -135,8 +135,8 @@ export async function fetchCuratorLists(curatorId: string): Promise<CuratorList[
       if (data && data.length > 0) {
         return data.map((row: any) => mapCuratorList(row, row.list_spots?.[0]?.count ?? 0));
       }
-    } catch {
-      // fall through
+    } catch (err) {
+      console.warn('fetchCuratorLists: Supabase query failed, falling back to local/mock lists', err);
     }
   }
 
@@ -177,7 +177,8 @@ export async function fetchListById(listId: string): Promise<CuratorList | null>
     if (error) throw error;
     if (!data) return findLocalListById(listId);
     return mapCuratorList(data, data.list_spots?.[0]?.count ?? 0);
-  } catch {
+  } catch (err) {
+    console.warn('fetchListById: Supabase query failed, falling back to local list', err);
     return findLocalListById(listId);
   }
 }
@@ -198,8 +199,8 @@ export async function createList(
         .single();
       if (error) throw error;
       return mapCuratorList(data, 0);
-    } catch {
-      // fall through to local fallback
+    } catch (err) {
+      console.error('createList: Supabase write failed unexpectedly, saving locally instead', err);
     }
   }
 
@@ -270,9 +271,9 @@ export async function fetchListSpots(listId: string): Promise<ListSpot[]> {
         .eq('list_id', listId)
         .order('position', { ascending: true });
       if (error) throw error;
-      if (data) return data.map(mapListSpot);
-    } catch {
-      // fall through
+      if (data && data.length > 0) return data.map(mapListSpot);
+    } catch (err) {
+      console.warn('fetchListSpots: Supabase query failed, falling back to local spots', err);
     }
   }
 
@@ -300,8 +301,8 @@ export async function addSpotToList(
         .single();
       if (error) throw error;
       return mapListSpot({ ...data, place: data.place ?? place });
-    } catch {
-      // fall through to local fallback
+    } catch (err) {
+      console.warn('addSpotToList: Supabase insert failed, saving spot locally instead', err);
     }
   }
 

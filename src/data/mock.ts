@@ -4,6 +4,7 @@ import type {
   Creator,
   CreatorPick,
   Place,
+  PostComment,
   Treatment,
 } from '../types';
 
@@ -615,6 +616,57 @@ export const mockCommunityPosts: CommunityPost[] = [
     createdAt: '2026-08-25T00:00:00Z',
     likeCount: 5,
     commentCount: 1,
+  },
+];
+
+export const mockPostComments: PostComment[] = [
+  {
+    id: 'comment-1-1',
+    postId: 'post-1',
+    authorName: 'Grace',
+    authorAvatarUrl: 'https://i.pravatar.cc/150?img=32',
+    text: 'Saving this — I have melasma and have been scared to try laser toning. Glad it worked for you!',
+    createdAt: '2026-08-20T14:30:00Z',
+  },
+  {
+    id: 'comment-1-2',
+    postId: 'post-1',
+    authorName: 'Haruto',
+    authorAvatarUrl: 'https://i.pravatar.cc/150?img=51',
+    text: 'How many sessions did they recommend for the pigmentation? Booking a consult next week.',
+    createdAt: '2026-08-21T09:15:00Z',
+  },
+  {
+    id: 'comment-3-1',
+    postId: 'post-3',
+    authorName: 'Mei',
+    authorAvatarUrl: 'https://i.pravatar.cc/150?img=44',
+    text: "There's a walk-in place two blocks from Hongdae station that does 30-minute express facials, super convenient before going out.",
+    createdAt: '2026-08-24T11:00:00Z',
+  },
+  {
+    id: 'comment-3-2',
+    postId: 'post-3',
+    authorName: 'Declan',
+    authorAvatarUrl: 'https://i.pravatar.cc/150?img=13',
+    text: 'Seconding a pore facial near Hongdae — I got one last month and my skin looked amazing in photos that night.',
+    createdAt: '2026-08-24T16:45:00Z',
+  },
+  {
+    id: 'comment-3-3',
+    postId: 'post-3',
+    authorName: 'Isabelle',
+    authorAvatarUrl: 'https://i.pravatar.cc/150?img=25',
+    text: 'Message me — I can send you the name of the place I went to near exit 9, they speak English too.',
+    createdAt: '2026-08-25T08:20:00Z',
+  },
+  {
+    id: 'comment-4-1',
+    postId: 'post-4',
+    authorName: 'Camille',
+    authorAvatarUrl: 'https://i.pravatar.cc/150?img=39',
+    text: 'The photos from your session look incredible, adding this to my last-day-in-Seoul list too!',
+    createdAt: '2026-08-26T10:05:00Z',
   },
 ];
 

@@ -1,7 +1,7 @@
 import { CommunityPost, PostComment, UserSession } from '../types';
 import { mapCommunityPost, mapPostComment } from '../lib/mappers';
 import { supabase } from '../lib/supabase';
-import { mockCommunityPosts } from '../data/mock';
+import { mockCommunityPosts, mockPostComments } from '../data/mock';
 import { DEMO_USER } from './auth';
 import {
   bumpLocalPostCounts,
@@ -30,6 +30,18 @@ export interface AddCommentInput {
 
 function isDemoSession(session: UserSession): boolean {
   return session.user?.id === DEMO_USER.id;
+}
+
+function isMockPost(postId: string): boolean {
+  return mockCommunityPosts.some((p) => p.id === postId);
+}
+
+function isMockComment(commentId: string): boolean {
+  return mockPostComments.some((c) => c.id === commentId);
+}
+
+function isLocalOrMockPost(postId: string): boolean {
+  return postId.startsWith('local-') || readLocalPosts().some((p) => p.id === postId) || isMockPost(postId);
 }
 
 function mockPostsWithLocal(): CommunityPost[] {
@@ -62,7 +74,8 @@ export async function fetchCommunityPosts(viewerId?: string): Promise<CommunityP
 
     const remote = (data ?? []).map((row: any) => mapCommunityPost(row, undefined, likedIds.has(row.id)));
     return sortByCreatedAtDesc([...remote, ...local]);
-  } catch {
+  } catch (err) {
+    console.warn('fetchCommunityPosts: Supabase query failed, falling back to local/mock data', err);
     return sortByCreatedAtDesc(local);
   }
 }
@@ -93,8 +106,8 @@ export async function fetchCommunityPostById(id: string, viewerId?: string): Pro
         }
         return mapCommunityPost(data, undefined, likedByMe);
       }
-    } catch {
-      // fall through to mock
+    } catch (err) {
+      console.warn('fetchCommunityPostById: Supabase query failed, falling back to mock data', err);
     }
   }
   if (mock) return { ...mock, likedByMe: readLikedPostIds().includes(id) };
@@ -124,8 +137,8 @@ export async function createCommunityPost(input: CreatePostInput, session: UserS
         .single();
       if (error) throw error;
       return mapCommunityPost(data, { likeCount: 0, commentCount: 0 }, false);
-    } catch {
-      // fall through to local fallback (Supabase write failed unexpectedly)
+    } catch (err) {
+      console.error('createCommunityPost: Supabase write failed unexpectedly, saving locally instead', err);
     }
   }
 
@@ -152,7 +165,7 @@ export async function createCommunityPost(input: CreatePostInput, session: UserS
 export async function toggleLike(postId: string, session: UserSession): Promise<{ liked: boolean }> {
   if (!session.isLoggedIn || !session.user) throw new Error('Must be signed in to like a post.');
   const userId = session.user.id;
-  const isLocalPost = postId.startsWith('local-') || readLocalPosts().some((p) => p.id === postId);
+  const isLocalPost = isLocalOrMockPost(postId);
 
   if (supabase && !isLocalPost && !isDemoSession(session)) {
     try {
@@ -171,8 +184,8 @@ export async function toggleLike(postId: string, session: UserSession): Promise<
       const { error } = await supabase.from('post_likes').insert({ post_id: postId, user_id: userId });
       if (error) throw error;
       return { liked: true };
-    } catch {
-      // fall through to local fallback
+    } catch (err) {
+      console.warn('toggleLike: Supabase call failed, falling back to local like state', err);
     }
   }
 
@@ -183,7 +196,7 @@ export async function toggleLike(postId: string, session: UserSession): Promise<
 
 export async function deleteCommunityPost(postId: string, session: UserSession): Promise<void> {
   if (!session.isLoggedIn || !session.user) throw new Error('Must be signed in to delete a post.');
-  const isLocalPost = postId.startsWith('local-') || readLocalPosts().some((p) => p.id === postId);
+  const isLocalPost = isLocalOrMockPost(postId);
 
   if (isLocalPost) {
     removeLocalPost(postId);
@@ -200,8 +213,9 @@ export async function deleteCommunityPost(postId: string, session: UserSession):
 }
 
 export async function fetchComments(postId: string): Promise<PostComment[]> {
+  const seed = mockPostComments.filter((c) => c.postId === postId);
   const local = readLocalComments(postId);
-  if (!supabase) return local;
+  if (!supabase || isMockPost(postId)) return [...seed, ...local];
   try {
     const { data, error } = await supabase
       .from('post_comments')
@@ -209,16 +223,17 @@ export async function fetchComments(postId: string): Promise<PostComment[]> {
       .eq('post_id', postId)
       .order('created_at', { ascending: true });
     if (error) throw error;
-    return [...(data ?? []).map(mapPostComment), ...local];
-  } catch {
-    return local;
+    return [...seed, ...(data ?? []).map(mapPostComment), ...local];
+  } catch (err) {
+    console.warn('fetchComments: Supabase query failed, falling back to local/seed data', err);
+    return [...seed, ...local];
   }
 }
 
 export async function addComment(postId: string, input: AddCommentInput, session: UserSession): Promise<PostComment> {
   if (!session.isLoggedIn || !session.user) throw new Error('Must be signed in to comment.');
   const author = session.user;
-  const isLocalPost = postId.startsWith('local-') || readLocalPosts().some((p) => p.id === postId);
+  const isLocalPost = isLocalOrMockPost(postId);
 
   if (supabase && !isLocalPost && !isDemoSession(session)) {
     try {
@@ -235,8 +250,8 @@ export async function addComment(postId: string, input: AddCommentInput, session
         .single();
       if (error) throw error;
       return mapPostComment(data);
-    } catch {
-      // fall through to local fallback
+    } catch (err) {
+      console.warn('addComment: Supabase insert failed, saving comment locally instead', err);
     }
   }
 
@@ -256,7 +271,7 @@ export async function addComment(postId: string, input: AddCommentInput, session
 
 export async function deleteComment(postId: string, commentId: string, session: UserSession): Promise<void> {
   if (!session.isLoggedIn || !session.user) throw new Error('Must be signed in to delete a comment.');
-  const isLocalComment = commentId.startsWith('local-');
+  const isLocalComment = commentId.startsWith('local-') || isMockComment(commentId);
 
   if (isLocalComment) {
     removeLocalComment(postId, commentId);
